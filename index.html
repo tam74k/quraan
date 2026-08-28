@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -385,17 +385,6 @@
 
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             
-            <!-- Quick Demo Role Switcher -->
-            <div style="display: flex; align-items: center; gap: 6px; background: rgba(4, 120, 87, 0.08); padding: 4px 8px; border-radius: 10px;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">تبديل (تجربة):</span>
-                <select id="role-quick-switcher" onchange="quickSwitchRole(this.value)" style="width: auto; margin: 0; padding: 4px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 8px;">
-                    <option value="admin">مدير النظام</option>
-                    <option value="sheikh">الشيخ المحفظ</option>
-                    <option value="parent">ولي الأمر</option>
-                    <option value="data_entry">مدخل بيانات</option>
-                </select>
-            </div>
-
             <!-- Parent Notification Bell -->
             <div id="parent-bell-btn" style="position: relative; cursor: pointer; display: none;" onclick="openParentNotifModal()">
                 <button class="btn btn-outline btn-sm" style="padding: 6px 10px;">
@@ -444,15 +433,7 @@
                     </button>
                 </form>
 
-                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); text-align: right;">
-                    <div style="font-size: 0.78rem; font-weight: 800; color: var(--accent); margin-bottom: 10px;">✨ حسابات التجربة السريعة (دخول بنقرة):</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button class="btn btn-outline btn-sm" onclick="demoLogin('admin')">👑 مدير المركز (admin)</button>
-                        <button class="btn btn-outline btn-sm" onclick="demoLogin('sheikh_ahmed')">👳‍♂️ المحفظ (sheikh_ahmed)</button>
-                        <button class="btn btn-outline btn-sm" onclick="demoLogin('parent_rashid')">👨‍👧‍👦 ولي الأمر (parent_rashid)</button>
-                        <button class="btn btn-outline btn-sm" onclick="demoLogin('data_fahad')">📝 مدخل بيانات (data_fahad)</button>
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -632,39 +613,14 @@
                 academicSeason: 'الفصل الدراسي الثاني',
                 managerName: 'فضيلة الشيخ د. سعد بن عبدالله الكندري'
             },
-            users: [
-                { id: 'u1', username: 'admin', email: 'admin@test.com', password: 'admin', role: 'admin', name: 'أ. سعد العتيبي (المدير العام)', phone: '90000000', status: 'active', permissions: { manage_students: true, manage_sheikhs: true, manage_admins: true, daily_recitation: true, manage_exams: true, print_reports: true, honor_board: true, center_settings: true, manage_accounts: true } },
-                { id: 'u2', username: 'sheikh_ahmed', email: 'sheikh@test.com', password: 'admin', role: 'sheikh', name: 'الشيخ أحمد العلي', phone: '90000001', status: 'active', permissions: { manage_students: false, manage_sheikhs: false, manage_admins: false, daily_recitation: true, manage_exams: true, print_reports: true, honor_board: true, center_settings: false, manage_accounts: false } },
-                { id: 'u3', username: 'parent_rashid', email: 'parent@test.com', password: 'admin', role: 'parent', name: 'ولي الأمر (محمد الراشد)', phone: '99991111', status: 'active', permissions: { manage_students: false, manage_sheikhs: false, manage_admins: false, daily_recitation: false, manage_exams: false, print_reports: false, honor_board: false, center_settings: false, manage_accounts: false } },
-                { id: 'u4', username: 'data_fahad', email: 'data@test.com', password: 'admin', role: 'data_entry', name: 'أ. فهد الشمري (مدخل بيانات)', phone: '90000005', status: 'active', permissions: { manage_students: true, manage_sheikhs: false, manage_admins: false, daily_recitation: true, manage_exams: true, print_reports: true, honor_board: true, center_settings: false, manage_accounts: false } }
-            ],
-            sheikhs: [
-                { id: 1, userId: 'u2', name: 'الشيخ أحمد العلي', civilId: '290010100001', phone: '90000001', email: 'sheikh@test.com', username: 'sheikh_ahmed', active: true, halqaName: 'حلقة الإمام نافع المدني', bio: 'مجاز بالقراءات العشر' },
-                { id: 2, userId: null, name: 'الشيخ محمود المصري', civilId: '285010100002', phone: '90000002', email: 'mahmoud@test.com', username: 'sheikh_mahmoud', active: true, halqaName: 'حلقة الإمام عاصم الكوفي', bio: 'مجاز برواية حفص وشعبة' }
-            ],
-            admins: [
-                { id: 1, civilId: '280010100010', name: 'أ. سعد العتيبي', phone: '90000000', email: 'admin@test.com', username: 'admin', jobTitle: 'المدير العام', role: 'admin' },
-                { id: 2, civilId: '284050500022', name: 'أ. فهد الشمري', phone: '90000005', email: 'data@test.com', username: 'data_fahad', jobTitle: 'مسؤول شؤون الطلاب ومدخل بيانات', role: 'data_entry' }
-            ],
-            students: [
-                { id: 1, name: 'عبدالرحمن محمد الراشد', civilId: '312051200123', dob: '2012-05-12', age: 12, grade: 'المتوسط', parentName: 'محمد الراشد', parentPhone: '99991111', parentEmail: 'parent@test.com', parentUsername: 'parent_rashid', sheikhId: 1, status: 'Active', joinDate: '2023-09-10', currentJuz: 6, targetJuz: 10, points: 480 },
-                { id: 2, name: 'عمر محمد الراشد', civilId: '315082000456', dob: '2015-08-20', age: 9, grade: 'الابتدائي', parentName: 'محمد الراشد', parentPhone: '99991111', parentEmail: 'parent@test.com', parentUsername: 'parent_rashid', sheikhId: 1, status: 'Active', joinDate: '2023-10-01', currentJuz: 2, targetJuz: 3, points: 320 },
-                { id: 3, name: 'زياد طارق المطيري', civilId: '309031500789', dob: '2009-03-15', age: 15, grade: 'الثانوي', parentName: 'طارق المطيري', parentPhone: '99992222', parentEmail: 'tariq@test.com', parentUsername: 'tariq_m', sheikhId: 2, status: 'Active', joinDate: '2023-08-15', currentJuz: 12, targetJuz: 15, points: 620 },
-                { id: 4, name: 'سعود عبدالعزيز الهاجري', civilId: '308112200333', dob: '2008-11-22', age: 16, grade: 'الثانوي', parentName: 'عبدالعزيز الهاجري', parentPhone: '99995555', parentEmail: 'abdulaziz@test.com', parentUsername: 'abdulaziz_h', sheikhId: 1, status: 'Active', joinDate: '2024-02-01', currentJuz: 1, targetJuz: 5, points: 100 }
-            ],
-            tracking: [
-                { id: 1, studentId: 1, date: new Date().toISOString().split('T')[0], newSurah: 'البقرة', newFrom: 250, newTo: 255, revSurah: 'الفاتحة', revFrom: 1, revTo: 7, att: 'حضوري', eval: 'ممتاز', notes: 'تلاوة متقنة وصوت خاشع ومخارج سليمة.', status: 'approved', readByParent: false, sheikhId: 1 },
-                { id: 2, studentId: 2, date: new Date().toISOString().split('T')[0], newSurah: 'النبأ', newFrom: 1, newTo: 20, revSurah: 'الناس', revFrom: 1, revTo: 6, att: 'حضوري', eval: 'جيد جدا', notes: 'بداية طيبة في سورة النبأ، يرجى تكرار الاستماع في المنزل.', status: 'approved', readByParent: false, sheikhId: 1 }
-            ],
-            notes: [
-                { id: 1, studentId: 1, sheikhId: 1, date: new Date().toISOString().split('T')[0], text: 'يسرنا إبلاغكم بأن الطالب عبدالرحمن مرشح لجائزة قارئ الأسبوع نظير اجتهاده.', priority: 'تشجيع', readByParent: false }
-            ],
-            exams: [
-                { id: 1, studentId: 1, date: '2026-08-15', type: 'اختبار 5 أجزاء', partOrSurah: 'من الجزء 1 إلى 5', grade: 'ممتاز مرتفع', score: 98, examiner: 'الشيخ أحمد العلي', notes: 'إتقان فائق وأحكام تجويد سليمة 100%' }
-            ],
-            badges: [
-                { id: 'b1', name: 'قارئ الأسبوع', icon: '👑', description: 'أعلى معدل تسميع متواصل', studentId: 1, dateEarned: '2026-08-20' }
-            ]
+            users: [],
+            sheikhs: [],
+            admins: [],
+            students: [],
+            tracking: [],
+            notes: [],
+            exams: [],
+            badges: []
         };
 
         let db = loadDb();
@@ -673,28 +629,19 @@
         function loadDb() {
             try {
                 const s = localStorage.getItem(STORAGE_KEY);
-                if (!s) return defaultDb;
+                if (!s) return JSON.parse(JSON.stringify(defaultDb));
                 const parsed = JSON.parse(s);
-                
-                // Ensure users have username, password, permissions even if loaded from older localStorage
-                if (parsed && Array.isArray(parsed.users)) {
-                    defaultDb.users.forEach(defU => {
-                        const existing = parsed.users.find(u => u.email === defU.email || u.id === defU.id || (u.username && u.username === defU.username));
-                        if (existing) {
-                            if (!existing.username) existing.username = defU.username;
-                            if (!existing.password) existing.password = defU.password;
-                            if (!existing.phone) existing.phone = defU.phone;
-                            if (!existing.permissions) existing.permissions = defU.permissions;
-                            if (!existing.status) existing.status = defU.status;
-                        } else {
-                            parsed.users.push(defU);
-                        }
-                    });
-                } else {
-                    parsed.users = defaultDb.users;
-                }
+                // Ensure all required arrays exist
+                parsed.users    = parsed.users    || [];
+                parsed.sheikhs  = parsed.sheikhs  || [];
+                parsed.admins   = parsed.admins   || [];
+                parsed.students = parsed.students || [];
+                parsed.tracking = parsed.tracking || [];
+                parsed.notes    = parsed.notes    || [];
+                parsed.exams    = parsed.exams    || [];
+                parsed.badges   = parsed.badges   || [];
                 return parsed;
-            } catch(e) { return defaultDb; }
+            } catch(e) { return JSON.parse(JSON.stringify(defaultDb)); }
         }
 
         function saveDb() {
@@ -922,32 +869,7 @@
 
                 loginUser(user);
             } else {
-                alert('اسم المستخدم أو البريد الإلكتروني غير مسجل في النظام. يمكنك تجربة الحسابات السريعة أدناه.');
-            }
-        }
-
-        function demoLogin(key) {
-            const normalized = (key || '').toLowerCase();
-            let user = db.users.find(u => 
-                (u.username && u.username.toLowerCase() === normalized) ||
-                (u.email && u.email.toLowerCase() === normalized) ||
-                (u.role && u.role.toLowerCase() === normalized)
-            );
-
-            if (!user) {
-                user = defaultDb.users.find(u => 
-                    (u.username && u.username.toLowerCase() === normalized) ||
-                    (u.email && u.email.toLowerCase() === normalized) ||
-                    (u.role && u.role.toLowerCase() === normalized)
-                );
-            }
-
-            if (user) {
-                loginUser(user);
-            } else {
-                // Fallback default
-                const def = defaultDb.users[0];
-                loginUser(def);
+                alert('اسم المستخدم أو البريد الإلكتروني غير مسجل في النظام. تأكد من صحة البيانات أو تواصل مع إدارة المركز.');
             }
         }
 
@@ -956,7 +878,6 @@
             document.getElementById('main-header').style.display = 'flex';
             document.getElementById('header-center-name').innerText = db.centerInfo.name;
             document.getElementById('header-user-name').innerText = user.name;
-            document.getElementById('role-quick-switcher').value = user.role;
 
             const bellBtn = document.getElementById('parent-bell-btn');
             if (user.role === 'parent') {
@@ -969,10 +890,6 @@
             routeUser();
         }
 
-        function quickSwitchRole(role) {
-            const u = db.users.find(usr => usr.role === role) || { id: 'demo', username: `${role}`, name: 'مستخدم تجريبي', email: `${role}@test.com`, role: role };
-            loginUser(u);
-        }
 
         function logout() {
             if (supabaseClient) {
@@ -4043,10 +3960,6 @@
                 return matchPhone || matchEmail || matchUser || matchName;
             });
 
-            // Demo parent fallback
-            if (kids.length === 0 && (currentUser.username === 'parent_rashid' || currentUser.email === 'parent@test.com')) {
-                kids = db.students.filter(s => s.id === 1 || s.id === 2 || s.parentPhone === '99991111');
-            }
 
             return kids;
         }
