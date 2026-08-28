@@ -2,11 +2,17 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Sheikh } from '../../types';
 import { UserSquare, Plus, Edit2, Trash2, Phone, Mail, X, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export const SheikhsManager: React.FC = () => {
   const { sheikhs, students, addSheikh, updateSheikh, deleteSheikh, addUser } = useApp();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allowLogin, setAllowLogin] = useState(false);
+  const [authUsername, setAuthUsername] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authConfirm, setAuthConfirm] = useState('');
   const [editingSheikh, setEditingSheikh] = useState<Sheikh | null>(null);
 
   const [formData, setFormData] = useState({
@@ -47,10 +53,32 @@ export const SheikhsManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    if (allowLogin) {
+      if (authPassword !== authConfirm) {
+        alert("كلمة المرور غير متطابقة");
+        e.preventDefault();
+        return;
+      }
+      e.preventDefault();
+      const res = await supabase.rpc('admin_create_auth_user', {
+        p_email: authEmail,
+        p_password: authPassword,
+        p_username: authUsername,
+        p_name: formData.name,
+        p_phone: formData.phone,
+        p_role: 'sheikh'
+      });
+      if (res.error) {
+        alert('فشل إنشاء حساب الدخول: ' + res.error.message);
+        return;
+      }
+      var newAuthId = res.data;
+      // Assuming we continue to add the actual record
+    }
     e.preventDefault();
     const payload = {
-      userId: editingSheikh?.userId || `u-sh-${Date.now()}`,
+      userId: editingSheikh?.userId || (typeof newAuthId !== 'undefined' ? newAuthId : null),
       name: formData.name,
       civilId: formData.civilId,
       phone: formData.phone,
@@ -209,7 +237,11 @@ export const SheikhsManager: React.FC = () => {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData({ ...formData, name: val });
+                    if(!authUsername) setAuthUsername(val.trim().replace(/\s+/g, '_').toLowerCase() + '_' + Math.floor(1000 + Math.random() * 9000));
+                  }}
                     placeholder="الشيخ أحمد العلي"
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   />

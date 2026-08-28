@@ -42,6 +42,8 @@ interface AppContextType {
   updateAdmin: (id: number, admin: Partial<Admin>) => void;
   deleteAdmin: (id: number) => void;
   addUser: (user: User) => void;
+  updateUser: (id: string, user: Partial<User>) => void;
+  deleteUser: (id: string) => void;
   assignStudentToSheikh: (studentId: number, sheikhId: number | null) => void;
   saveTrackingRecord: (record: Omit<TrackingRecord, 'id'> & { id?: number }) => TrackingRecord;
   saveBatchTrackingRecords: (records: (Omit<TrackingRecord, 'id'> & { id?: number })[]) => void;
@@ -304,10 +306,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addUser = (userData: User) => {
     setUsers(prev => [...prev, userData]);
-    // Supabase auth user creation should be done via admin API, skipping direct table insert for now unless via RPC
   };
-
-  const assignStudentToSheikh = async (studentId: number, sheikhId: number | null) => {
+  const updateUser = async (id: string, userData: Partial<User>) => {
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, ...userData } : u));
+    const __res = await supabase.from('profiles').update({
+        username: userData.username,
+        email: userData.email,
+        name: userData.name,
+        phone: userData.phone,
+        role: userData.role,
+        status: userData.status,
+        permissions: userData.permissions
+    }).eq('id', id);
+    if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
+  };
+  const deleteUser = async (id: string) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+    const __res = await supabase.from('profiles').delete().eq('id', id);
+    if (__res.error) { console.error("Supabase Delete Error:", __res.error); alert("فشل الحذف: " + __res.error.message); }
+  };
+const assignStudentToSheikh = async (studentId: number, sheikhId: number | null) => {
     setStudents(prev => prev.map(s => (s.id === studentId ? { ...s, sheikhId } : s)));
     const __res = await supabase.from("students").update({ sheikh_id: sheikhId }).eq("id", studentId); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
@@ -502,7 +520,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser, users, centerInfo, sheikhs, admins, students, tracking, notes, exams, badges,
         isDarkMode, activeScreen, setActiveScreen, toggleDarkMode, login, switchRole, logout,
         updateCenterInfo, addStudent, updateStudent, deleteStudent, addSheikh, updateSheikh, deleteSheikh,
-        addAdmin, updateAdmin, deleteAdmin, addUser, assignStudentToSheikh, saveTrackingRecord,
+        addAdmin, updateAdmin, deleteAdmin, addUser, updateUser, deleteUser, assignStudentToSheikh, saveTrackingRecord,
         saveBatchTrackingRecords, deleteTrackingRecord, addNote, markNotesAsRead, addExam, addBadge,
         exportDataJSON, importDataJSON, resetToDemoData, extractDOBFromCivilID, currentSheikh
       }}

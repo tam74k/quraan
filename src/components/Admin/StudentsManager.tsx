@@ -49,7 +49,7 @@ export const StudentsManager: React.FC = () => {
     grade: 'المتوسط' as Student['grade'],
     parentName: '',
     parentPhone: '',
-    parentEmail: '',
+
     sheikhId: '' as string | number,
     status: 'Active' as Student['status'],
     notes: '',
@@ -66,7 +66,7 @@ export const StudentsManager: React.FC = () => {
       grade: 'المتوسط',
       parentName: '',
       parentPhone: '',
-      parentEmail: '',
+      
       sheikhId: sheikhs[0]?.id || '',
       status: 'Active',
       notes: '',

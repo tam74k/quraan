@@ -2,11 +2,17 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Admin, User } from '../../types';
 import { ShieldCheck, Plus, Edit2, Trash2, X, Shield, KeyRound } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export const AdminsManager: React.FC = () => {
   const { admins, users, addAdmin, updateAdmin, deleteAdmin, addUser } = useApp();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [allowLogin, setAllowLogin] = useState(false);
+  const [authUsername, setAuthUsername] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authConfirm, setAuthConfirm] = useState('');
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
 
   const [formData, setFormData] = useState({
@@ -41,7 +47,29 @@ export const AdminsManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    if (allowLogin) {
+      if (authPassword !== authConfirm) {
+        alert("كلمة المرور غير متطابقة");
+        e.preventDefault();
+        return;
+      }
+      e.preventDefault();
+      const res = await supabase.rpc('admin_create_auth_user', {
+        p_email: authEmail,
+        p_password: authPassword,
+        p_username: authUsername,
+        p_name: formData.name,
+        p_phone: formData.phone,
+        p_role: 'admin'
+      });
+      if (res.error) {
+        alert('فشل إنشاء حساب الدخول: ' + res.error.message);
+        return;
+      }
+      var newAuthId = res.data;
+      // Assuming we continue to add the actual record
+    }
     e.preventDefault();
     const payload = {
       name: formData.name,
@@ -170,7 +198,11 @@ export const AdminsManager: React.FC = () => {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData({ ...formData, name: val });
+                    if(!authUsername) setAuthUsername(val.trim().replace(/\s+/g, '_').toLowerCase() + '_' + Math.floor(1000 + Math.random() * 9000));
+                  }}
                   placeholder="أ. سعد العتيبي"
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 />

@@ -9,13 +9,38 @@ export const LoginModal: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isForgot, setIsForgot] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regUsername, setRegUsername] = useState('');
+  const [regPhone, setRegPhone] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotMsg, setForgotMsg] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const success = login(email);
+    
+    let loginEmail = email;
+    if (!email.includes('@')) {
+        const { data, error: profileErr } = await supabase.from('profiles').select('email').eq('username', email).single();
+        if (profileErr || !data) {
+            setError('اسم المستخدم غير صحيح أو غير مسجل.');
+            return;
+        }
+        loginEmail = data.email;
+    }
+
+    const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password
+    });
+
+    if (authErr) {
+        setError('بيانات الدخول غير صحيحة.');
+        return;
+    }
+
+    const success = login(loginEmail);
     if (!success) {
       setError('البريد الإلكتروني غير مسجل، يمكنك استخدام حسابات التجربة السريعة أدناه.');
     }
@@ -67,14 +92,18 @@ export const LoginModal: React.FC = () => {
         
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-amber-300 mx-auto mb-4 shadow-lg">
-            <BookOpen className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-amber-300 mx-auto mb-4 shadow-lg overflow-hidden">
+            {centerInfo.logo ? (
+              <img src={centerInfo.logo} alt={centerInfo.name} className="w-full h-full object-cover" />
+            ) : (
+              <BookOpen className="w-8 h-8" />
+            )}
           </div>
           <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">{centerInfo.name}</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">البوابة الإلكترونية لإدارة الحلقات والقرآن الكريم</p>
         </div>
 
-        {!isForgot ? (
+        {!isForgot && !isRegister ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 text-xs bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl">
@@ -83,9 +112,9 @@ export const LoginModal: React.FC = () => {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">البريد الإلكتروني</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">البريد الإلكتروني أو اسم المستخدم</label>
               <input
-                type="email"
+                type="text"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -121,8 +150,64 @@ export const LoginModal: React.FC = () => {
             >
               تسجيل الدخول للنظام
             </button>
+            <button
+              type="button"
+              onClick={() => { setIsRegister(true); setIsForgot(false); setForgotMsg(''); setError(''); }}
+              className="w-full py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-xl shadow-sm transition-all mt-2 cursor-pointer"
+            >
+              إنشاء حساب ولي أمر جديد
+            </button>
           </form>
-        ) : (
+        
+        ) : isRegister ? (
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setError('');
+            const res = await supabase.rpc('admin_create_auth_user', {
+              p_email: forgotEmail,
+              p_password: password,
+              p_username: regUsername,
+              p_name: regName,
+              p_phone: regPhone,
+              p_role: 'parent'
+            });
+            if (res.error) {
+              setError('حدث خطأ أثناء إنشاء الحساب: ' + res.error.message);
+            } else {
+              setForgotMsg('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.');
+              setIsRegister(false);
+            }
+          }} className="space-y-4">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">إنشاء حساب ولي أمر</h3>
+            {error && (
+              <div className="p-3 text-xs bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl">
+                {error}
+              </div>
+            )}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">الاسم الكامل</label>
+              <input type="text" required value={regName} onChange={(e) => setRegName(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المستخدم</label>
+              <input type="text" required value={regUsername} onChange={(e) => setRegUsername(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">البريد الإلكتروني</label>
+              <input type="email" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">رقم الجوال</label>
+              <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة المرور</label>
+              <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+            </div>
+            <button type="submit" className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm rounded-xl shadow-md transition-all">إنشاء الحساب</button>
+            <button type="button" onClick={() => setIsRegister(false)} className="w-full text-center text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 py-1">إلغاء</button>
+          </form>
+) : (
           <form onSubmit={handleForgotSubmit} className="space-y-4">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">استعادة كلمة المرور</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.</p>

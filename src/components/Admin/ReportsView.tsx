@@ -43,9 +43,14 @@ export const ReportsView: React.FC = () => {
         
         {/* Header */}
         <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-3 mb-4">
-          <div className="text-right">
-            <h2 className="font-serif font-black text-emerald-950 text-base">{centerInfo.name}</h2>
-            <p className="text-[11px] text-slate-600">{centerInfo.address}</p>
+          <div className="flex items-center gap-3">
+            {centerInfo.logo && (
+              <img src={centerInfo.logo} alt={centerInfo.name} className="w-12 h-12 object-contain rounded-lg" />
+            )}
+            <div className="text-right">
+              <h2 className="font-serif font-black text-emerald-950 text-base">{centerInfo.name}</h2>
+              <p className="text-[11px] text-slate-600">{centerInfo.address}</p>
+            </div>
           </div>
 
           <div className="text-center">
@@ -269,9 +274,19 @@ export const ReportsView: React.FC = () => {
 
         {reportType === 'all_students' && (
           <div className="bg-white p-8 rounded-3xl border border-slate-200">
-            <div className="text-center border-b-2 border-emerald-800 pb-4 mb-6">
-              <h2 className="text-xl font-bold text-emerald-950">{centerInfo.name}</h2>
-              <p className="text-xs text-slate-500">{centerInfo.address} - هاتف: {centerInfo.phone}</p>
+            <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-4 mb-6">
+              <div className="flex items-center gap-4">
+                {centerInfo.logo && (
+                  <img src={centerInfo.logo} alt={centerInfo.name} className="w-16 h-16 object-contain rounded-xl" />
+                )}
+                <div className="text-right">
+                  <h2 className="text-xl font-bold text-emerald-950">{centerInfo.name}</h2>
+                  <p className="text-xs text-slate-500">{centerInfo.address} - هاتف: {centerInfo.phone}</p>
+                </div>
+              </div>
+              <div className="text-left text-sm font-bold text-slate-600">
+                كشف بأسماء جميع طلاب المركز
+              </div>
             </div>
             <table className="w-full text-center text-xs border border-slate-300">
               <thead className="bg-slate-100">

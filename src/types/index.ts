@@ -66,7 +66,7 @@ export interface Student {
   grade: 'التمهيدي' | 'الابتدائي' | 'المتوسط' | 'الثانوي' | 'الجامعي' | 'عام';
   parentName?: string;
   parentPhone: string;
-  parentEmail: string;
+  parentEmail?: string;
   sheikhId: number | null;
   status: 'Active' | 'Inactive';
   joinDate: string;
