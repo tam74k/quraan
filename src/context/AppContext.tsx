@@ -191,7 +191,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateCenterInfo = async (info: Partial<CenterInfo>) => {
     const newInfo = { ...centerInfo, ...info };
     setCenterInfo(newInfo);
-    await supabase.from("center_info").update({
+    const __res = await supabase.from("center_info").update({
       name: newInfo.name,
       address: newInfo.address,
       phone: newInfo.phone,
@@ -200,7 +200,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       hijri_year: newInfo.hijriYear,
       academic_season: newInfo.academicSeason,
       manager_name: newInfo.managerName
-    }).eq("id", 1);
+    }).eq("id", 1); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
   const addStudent = (studentData: Omit<Student, "id">): Student => {
@@ -209,7 +209,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setStudents(prev => [newStudent, ...prev]);
     supabase.from("students").insert({
       name: newStudent.name, civil_id: newStudent.civilId, dob: newStudent.dob, age: newStudent.age, grade: newStudent.grade, parent_name: newStudent.parentName, parent_phone: newStudent.parentPhone, parent_email: newStudent.parentEmail, sheikh_id: newStudent.sheikhId, status: newStudent.status, join_date: newStudent.joinDate, current_juz: newStudent.currentJuz, target_juz: newStudent.targetJuz, points: newStudent.points, notes: newStudent.notes
-    }).select().single().then(({ data }) => {
+    }).select().single().then(({ data, error }) => {
+      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setStudents(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
     });
     return newStudent;
@@ -233,12 +234,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (studentData.targetJuz !== undefined) updatePayload.target_juz = studentData.targetJuz;
     if (studentData.points !== undefined) updatePayload.points = studentData.points;
     if (studentData.notes !== undefined) updatePayload.notes = studentData.notes;
-    await supabase.from("students").update(updatePayload).eq("id", id);
+    const __res = await supabase.from("students").update(updatePayload).eq("id", id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
   const deleteStudent = async (id: number) => {
     setStudents(prev => prev.filter(s => s.id !== id));
-    await supabase.from("students").delete().eq("id", id);
+    const __res = await supabase.from("students").delete().eq("id", id); if (__res.error) { console.error("Supabase Delete Error:", __res.error); alert("فشل الحذف: " + __res.error.message); }
   };
 
   const addSheikh = (sheikhData: Omit<Sheikh, "id">): Sheikh => {
@@ -247,7 +248,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSheikhs(prev => [...prev, newSheikh]);
     supabase.from("sheikhs").insert({
       name: newSheikh.name, civil_id: newSheikh.civilId, phone: newSheikh.phone, email: newSheikh.email, halqa_name: newSheikh.halqaName, bio: newSheikh.bio, active: newSheikh.active
-    }).select().single().then(({ data }) => {
+    }).select().single().then(({ data, error }) => {
+      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setSheikhs(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
     });
     return newSheikh;
@@ -263,12 +265,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (sheikhData.halqaName !== undefined) payload.halqa_name = sheikhData.halqaName;
     if (sheikhData.bio !== undefined) payload.bio = sheikhData.bio;
     if (sheikhData.active !== undefined) payload.active = sheikhData.active;
-    await supabase.from("sheikhs").update(payload).eq("id", id);
+    const __res = await supabase.from("sheikhs").update(payload).eq("id", id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
   const deleteSheikh = async (id: number) => {
     setSheikhs(prev => prev.filter(s => s.id !== id));
-    await supabase.from("sheikhs").delete().eq("id", id);
+    const __res = await supabase.from("sheikhs").delete().eq("id", id); if (__res.error) { console.error("Supabase Delete Error:", __res.error); alert("فشل الحذف: " + __res.error.message); }
   };
 
   const addAdmin = (adminData: Omit<Admin, "id">): Admin => {
@@ -277,7 +279,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAdmins(prev => [...prev, newAdmin]);
     supabase.from("admins").insert({
       name: newAdmin.name, civil_id: newAdmin.civilId, phone: newAdmin.phone, email: newAdmin.email, job_title: newAdmin.jobTitle
-    }).select().single().then(({ data }) => {
+    }).select().single().then(({ data, error }) => {
+      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setAdmins(prev => prev.map(a => a.id === tempId ? { ...a, id: data.id } : a));
     });
     return newAdmin;
@@ -291,12 +294,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (adminData.phone !== undefined) payload.phone = adminData.phone;
     if (adminData.email !== undefined) payload.email = adminData.email;
     if (adminData.jobTitle !== undefined) payload.job_title = adminData.jobTitle;
-    await supabase.from("admins").update(payload).eq("id", id);
+    const __res = await supabase.from("admins").update(payload).eq("id", id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
   const deleteAdmin = async (id: number) => {
     setAdmins(prev => prev.filter(a => a.id !== id));
-    await supabase.from("admins").delete().eq("id", id);
+    const __res = await supabase.from("admins").delete().eq("id", id); if (__res.error) { console.error("Supabase Delete Error:", __res.error); alert("فشل الحذف: " + __res.error.message); }
   };
 
   const addUser = (userData: User) => {
@@ -306,7 +309,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const assignStudentToSheikh = async (studentId: number, sheikhId: number | null) => {
     setStudents(prev => prev.map(s => (s.id === studentId ? { ...s, sheikhId } : s)));
-    await supabase.from("students").update({ sheikh_id: sheikhId }).eq("id", studentId);
+    const __res = await supabase.from("students").update({ sheikh_id: sheikhId }).eq("id", studentId); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
   const saveTrackingRecord = (record: Omit<TrackingRecord, "id"> & { id?: number }): TrackingRecord => {
@@ -389,7 +392,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         read_by_parent: record.readByParent
       };
       if (record.id) {
-        await supabase.from("tracking").update(payload).eq("id", record.id);
+        const __res = await supabase.from("tracking").update(payload).eq("id", record.id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
       } else {
         await supabase.from("tracking").insert(payload);
       }
@@ -422,7 +425,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteTrackingRecord = async (id: number) => {
     setTracking(prev => prev.filter(t => t.id !== id));
-    await supabase.from("tracking").delete().eq("id", id);
+    const __res = await supabase.from("tracking").delete().eq("id", id); if (__res.error) { console.error("Supabase Delete Error:", __res.error); alert("فشل الحذف: " + __res.error.message); }
   };
 
   const addNote = (noteData: Omit<Note, "id">) => {
@@ -431,7 +434,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotes(prev => [newNote, ...prev]);
     supabase.from("notes").insert({
       student_id: newNote.studentId, sheikh_id: newNote.sheikhId, date: newNote.date, text: newNote.text, priority: newNote.priority, read_by_parent: newNote.readByParent
-    }).select().single().then(({ data }) => {
+    }).select().single().then(({ data, error }) => {
+      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setNotes(prev => prev.map(n => n.id === tempId ? { ...n, id: data.id } : n));
     });
   };
@@ -452,7 +456,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setExams(prev => [newExam, ...prev]);
     supabase.from("exams").insert({
       student_id: newExam.studentId, date: newExam.date, type: newExam.type, part_or_surah: newExam.partOrSurah, grade: newExam.grade, score: newExam.score, examiner: newExam.examiner, notes: newExam.notes
-    }).select().single().then(({ data }) => {
+    }).select().single().then(({ data, error }) => {
+      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setExams(prev => prev.map(e => e.id === tempId ? { ...e, id: data.id } : e));
     });
     return newExam;
@@ -464,7 +469,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBadges(prev => [...prev, newBadge]);
     supabase.from("badges").insert({
       student_id: newBadge.studentId, name: newBadge.name, icon: newBadge.icon, description: newBadge.description, date_earned: newBadge.dateEarned
-    }).select().single().then(({ data }) => {
+    }).select().single().then(({ data, error }) => {
+      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setBadges(prev => prev.map(b => b.id === tempId ? { ...b, id: data.id } : b));
     });
   };
