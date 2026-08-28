@@ -1,12 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// نستخدم متغيرات البيئة إن وجدت، وفي حال عدم وجودها (كما في GitHub) نستخدم الروابط مباشرة ليعمل الموقع بسلاسة
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cudtouxztyxucgkzxhxo.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_sqqHGwXyTB5fioeqt3Vixw_yefbMR4d';
 
-// Create a dummy client or throw a soft error if missing, but avoid crashing the whole app import tree
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'public-anon-key'
-);
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
-export const hasSupabaseConfig = !!(supabaseUrl && supabaseKey);
+export const hasSupabaseConfig = true;
