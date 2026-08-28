@@ -113,7 +113,7 @@ export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => 
                 <th className="p-3">المراجعة</th>
                 <th className="p-3">الحضور</th>
                 <th className="p-3">التقييم</th>
-                <th className="p-3">ملاحظة وتوجيه المعلم</th>
+                <th className="p-3">ملاحظة وتوجيه الشيخ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-700 dark:text-slate-300">

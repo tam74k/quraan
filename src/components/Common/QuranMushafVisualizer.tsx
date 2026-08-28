@@ -16,7 +16,7 @@ export const QuranMushafVisualizer: React.FC<QuranMushafVisualizerProps> = ({
   const [filter, setFilter] = useState<'all' | 'memorized' | 'in_progress'>('all');
 
   // Identify status for each Surah based on tracking
-  const surahStatusMap = React.useMemo(() => {
+  const surahStatusMap = React.useMemo<Map<string, { status: 'memorized' | 'in_progress' | 'unmemorized'; count: number }>>(() => {
     const map = new Map<string, { status: 'memorized' | 'in_progress' | 'unmemorized'; count: number }>();
     
     QURAN_SURAHS.forEach(s => {
@@ -47,8 +47,8 @@ export const QuranMushafVisualizer: React.FC<QuranMushafVisualizerProps> = ({
     return map;
   }, [trackingHistory]);
 
-  const memorizedCount = Array.from(surahStatusMap.values()).filter(v => v.status === 'memorized').length;
-  const inProgressCount = Array.from(surahStatusMap.values()).filter(v => v.status === 'in_progress').length;
+  const memorizedCount = (Array.from(surahStatusMap.values()) as any[]).filter(v => v.status === 'memorized').length;
+  const inProgressCount = (Array.from(surahStatusMap.values()) as any[]).filter(v => v.status === 'in_progress').length;
   const percent = Math.min(100, Math.round(((memorizedCount + inProgressCount * 0.5) / 114) * 100));
 
   const filteredSurahs = QURAN_SURAHS.filter(surah => {

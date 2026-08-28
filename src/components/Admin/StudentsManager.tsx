@@ -471,7 +471,7 @@ export const StudentsManager: React.FC = () => {
 
                 {/* Sheikh Assignment */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الحلقة والمعلم المسند إليه</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الحلقة والشيخ المسند إليه</label>
                   <select
                     value={formData.sheikhId}
                     onChange={(e) => setFormData({ ...formData, sheikhId: e.target.value })}

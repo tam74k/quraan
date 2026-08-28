@@ -176,12 +176,13 @@ export const AdminDashboard: React.FC = () => {
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">توزيع المراحل الدراسية</h3>
             <div className="space-y-3">
               {Object.entries(gradeCounts).map(([grade, count]) => {
-                const pct = Math.round((count / students.length) * 100) || 0;
+                const numCount = Number(count);
+                const pct = Math.round((numCount / students.length) * 100) || 0;
                 return (
                   <div key={grade}>
                     <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       <span>{grade}</span>
-                      <span className="text-slate-400">{count} طالب ({pct}%)</span>
+                      <span className="text-slate-400">{numCount} طالب ({pct}%)</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
                       <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }}></div>

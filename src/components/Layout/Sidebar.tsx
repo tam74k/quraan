@@ -5,14 +5,14 @@ import {
   FileText,
   Users2,
   GraduationCap,
-  UserSquare2,
+  UserSquare,
   ShieldCheck,
   Award,
   Crown,
   Settings,
   Building,
   BookOpenCheck,
-  MessageSquareCheck,
+  MessageSquare,
   HeartHandshake,
   FileCheck2
 } from 'lucide-react';
@@ -30,7 +30,7 @@ export const Sidebar: React.FC = () => {
     { id: 'reports', label: 'التقارير والاستمارات', icon: FileText, badge: 'طباعة' },
     { id: 'groups', label: 'تكوين الحلقات', icon: Users2, badge: `${sheikhs.length} حلقات` },
     { id: 'students', label: 'سجل الطلاب', icon: GraduationCap, badge: `${students.length}` },
-    { id: 'sheikhs', label: 'المشايخ والمحفظين', icon: UserSquare2, badge: null },
+    { id: 'sheikhs', label: 'المشايخ والمحفظين', icon: UserSquare, badge: null },
     { id: 'admins', label: 'الكادر الإداري', icon: ShieldCheck, badge: null },
     { id: 'exams', label: 'الاختبارات والشهادات', icon: Award, badge: 'جديد' },
     { id: 'honor', label: 'لوحة الشرف والأوسمة', icon: Crown, badge: null },
@@ -42,7 +42,7 @@ export const Sidebar: React.FC = () => {
   const sheikhNavItems = [
     { id: 'daily-halqa', label: 'جدول المتابعة اليومي', icon: BookOpenCheck, badge: 'مباشر' },
     { id: 'sheikh-students', label: 'طلاب حلقتي', icon: GraduationCap, badge: null },
-    { id: 'sheikh-notes', label: 'سجل الملاحظات والتواصل', icon: MessageSquareCheck, badge: null },
+    { id: 'sheikh-notes', label: 'سجل الملاحظات والتواصل', icon: MessageSquare, badge: null },
     { id: 'reports', label: 'استمارات وتقارير الحلقة', icon: FileCheck2, badge: null },
     { id: 'exams', label: 'سجل اختبارات الأجزاء', icon: Award, badge: null }
   ];

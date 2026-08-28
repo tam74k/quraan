@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Sheikh } from '../../types';
-import { UserSquare2, Plus, Edit2, Trash2, Phone, Mail, X, CheckCircle2, XCircle } from 'lucide-react';
+import { UserSquare, Plus, Edit2, Trash2, Phone, Mail, X, CheckCircle2, XCircle } from 'lucide-react';
 
 export const SheikhsManager: React.FC = () => {
   const { sheikhs, students, addSheikh, updateSheikh, deleteSheikh, addUser } = useApp();
@@ -79,7 +79,7 @@ export const SheikhsManager: React.FC = () => {
   };
 
   const handleDelete = (sheikh: Sheikh) => {
-    if (window.confirm(`هل أنت متأكد من حذف الشيخ/المعلم (${sheikh.name})؟`)) {
+    if (window.confirm(`هل أنت متأكد من حذف الشيخ (${sheikh.name})؟`)) {
       deleteSheikh(sheikh.id);
     }
   };
@@ -92,7 +92,7 @@ export const SheikhsManager: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-              <UserSquare2 className="w-5 h-5" />
+              <UserSquare className="w-5 h-5" />
             </span>
             <div>
               <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">إدارة المشايخ والمحفظين</h2>

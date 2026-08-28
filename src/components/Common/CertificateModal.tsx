@@ -120,7 +120,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             {/* Footer Signatures */}
             <div className="grid grid-cols-2 gap-8 mt-10 pt-6 border-t border-slate-200 dark:border-slate-700 text-xs sm:text-sm">
               <div className="text-center">
-                <div className="font-bold text-slate-700 dark:text-slate-300">شيخ ومعلم الحلقة</div>
+                <div className="font-bold text-slate-700 dark:text-slate-300">شيخ الحلقة</div>
                 <div className="mt-6 font-semibold text-emerald-800 dark:text-emerald-400 font-serif">
                   {sheikhName || 'فضيلة المحفظ'}
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { MessageSquareCheck, Send, CheckCircle2, AlertTriangle, Sparkles, User } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle2, AlertTriangle, Sparkles, User } from 'lucide-react';
 import { Note } from '../../types';
 
 export const SheikhNotes: React.FC = () => {
@@ -43,7 +43,7 @@ export const SheikhNotes: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-              <MessageSquareCheck className="w-5 h-5" />
+              <MessageSquare className="w-5 h-5" />
             </span>
             <div>
               <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">سجل الملاحظات والتواصل مع أولياء الأمور</h2>

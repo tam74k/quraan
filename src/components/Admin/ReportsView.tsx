@@ -84,7 +84,7 @@ export const ReportsView: React.FC = () => {
                 <th className="border border-slate-400 p-1 bg-blue-100 text-blue-950" colSpan={3}>المراجعة الكبرى</th>
                 <th className="border border-slate-400 p-1 w-12" rowSpan={2}>الحضور</th>
                 <th className="border border-slate-400 p-1 w-14" rowSpan={2}>التقييم</th>
-                <th className="border border-slate-400 p-1" rowSpan={2}>ملاحظات وتوجيه المعلم</th>
+                <th className="border border-slate-400 p-1" rowSpan={2}>ملاحظات وتوجيه الشيخ</th>
                 <th className="border border-slate-400 p-1 w-14" rowSpan={2}>توقيع الشيخ</th>
               </tr>
               <tr className="bg-slate-100 text-[9px] font-semibold">

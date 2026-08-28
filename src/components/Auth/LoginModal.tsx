@@ -37,7 +37,7 @@ export const LoginModal: React.FC = () => {
     },
     {
       role: 'sheikh',
-      title: 'المعلم / الشيخ',
+      title: 'الشيخ',
       email: 'sheikh@test.com',
       desc: 'جدول التسميع اليومي، رصد الحفظ، والملاحظات',
       icon: GraduationCap,

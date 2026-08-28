@@ -102,9 +102,9 @@ export const DailyRecitationSheet: React.FC = () => {
   };
 
   const handleSaveAll = () => {
-    const payload = Object.values(gridRows).map(row => ({
+    const payload = Object.entries(gridRows).map(([sId, row]: [string, any]) => ({
       id: row.recordId,
-      studentId: row.studentId,
+      studentId: Number(sId),
       date: recitationDate,
       newSurah: row.newSurah,
       newFrom: row.newFrom === '' ? null : Number(row.newFrom),

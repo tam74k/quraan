@@ -449,7 +449,7 @@ export const UserSettings: React.FC = () => {
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   >
                     <option value="admin">مدير نظام (كامل الصلاحيات)</option>
-                    <option value="sheikh">معلم / شيخ محفظ</option>
+                    <option value="sheikh">شيخ محفظ</option>
                     <option value="parent">ولي أمر</option>
                     <option value="data_entry">مدخل بيانات / شؤون طلاب</option>
                   </select>

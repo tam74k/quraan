@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNotifications }) => {
 
   const rolesList: { role: UserRole; label: string; icon: any; color: string }[] = [
     { role: 'admin', label: 'مدير النظام (كامل الصلاحيات)', icon: Shield, color: 'text-purple-600 dark:text-purple-400' },
-    { role: 'sheikh', label: 'المعلم / الشيخ المحفظ', icon: GraduationCap, color: 'text-emerald-600 dark:text-emerald-400' },
+    { role: 'sheikh', label: 'الشيخ المحفظ', icon: GraduationCap, color: 'text-emerald-600 dark:text-emerald-400' },
     { role: 'parent', label: 'ولي الأمر (متابعة الأبناء)', icon: Users, color: 'text-amber-600 dark:text-amber-400' },
     { role: 'data_entry', label: 'مدخل بيانات / شؤون طلاب', icon: UserCheck, color: 'text-blue-600 dark:text-blue-400' }
   ];
