@@ -111,6 +111,9 @@ BEGIN
         new_user_id := gen_random_uuid();
         INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud) 
         VALUES (new_user_id, '00000000-0000-0000-0000-000000000000', p_email, crypt(p_password, gen_salt('bf')), NOW(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', p_username, 'name', p_name, 'phone', p_phone, 'role', p_role), NOW(), NOW(), 'authenticated', 'authenticated');
+
+        INSERT INTO auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
+        VALUES (new_user_id::text, new_user_id, jsonb_build_object('sub', new_user_id::text, 'email', p_email), 'email', NOW(), NOW());
     END IF;
 
     INSERT INTO public.profiles (id, user_id, username, email, name, phone, role, status, permissions)
