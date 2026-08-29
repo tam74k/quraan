@@ -66,6 +66,11 @@ export const SheikhsManager: React.FC = () => {
         return;
       }
       e.preventDefault();
+      const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', authUsername).maybeSingle();
+      if (existingUser) {
+        alert('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
+        return;
+      }
       const res = await supabase.rpc('admin_create_auth_user', {
         p_email: authEmail,
         p_password: authPassword,

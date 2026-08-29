@@ -28,7 +28,7 @@ interface AppContextType {
   activeScreen: string;
   setActiveScreen: (screen: string) => void;
   toggleDarkMode: () => void;
-  login: (email: string) => boolean;
+  login: (email: string) => Promise<boolean>;
   switchRole: (role: UserRole) => void;
   logout: () => void;
   updateCenterInfo: (info: Partial<CenterInfo>) => void;
@@ -76,10 +76,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeScreen, setActiveScreen] = useState('dashboard');
 
   useEffect(() => {
-    fetchInitialData();
+    fetchInitialData().then((loadedProfiles) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user && loadedProfiles) {
+          const userEmail = session.user.email;
+          const p = loadedProfiles.find((profile: any) => profile.email === userEmail);
+          if (p) {
+            const loggedInUser: User = {
+              id: p.id,
+              username: p.username,
+              email: p.email,
+              name: p.name,
+              phone: p.phone,
+              role: p.role,
+              status: p.status,
+              permissions: p.permissions
+            };
+            setCurrentUser(loggedInUser);
+            if (p.role === "admin" || p.role === "data_entry") setActiveScreen("dashboard");
+            else if (p.role === "sheikh") setActiveScreen("daily-halqa");
+            else if (p.role === "parent") setActiveScreen("parent-kids");
+          }
+        }
+      });
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  const fetchInitialData = async () => {
+  const fetchInitialData = async (): Promise<any[] | undefined> => {
     try {
       const [
         { data: profilesData },
@@ -142,6 +175,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (notesData) setNotes(notesData.map((n: any) => ({ id: n.id, studentId: n.student_id, sheikhId: n.sheikh_id, date: n.date, text: n.text, priority: n.priority, readByParent: n.read_by_parent })));
       if (examsData) setExams(examsData.map((e: any) => ({ id: e.id, studentId: e.student_id, date: e.date, type: e.type, partOrSurah: e.part_or_surah, grade: e.grade, score: e.score, examiner: e.examiner, notes: e.notes })));
       if (badgesData) setBadges(badgesData.map((b: any) => ({ id: b.id, studentId: b.student_id, name: b.name, icon: b.icon, description: b.description, dateEarned: b.date_earned })));
+      return profilesData;
     } catch (err) {
       console.error("Failed to load initial data from Supabase:", err);
       setCenterInfo({
@@ -157,8 +191,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     else document.documentElement.classList.remove("dark");
   };
 
-  const login = (email: string) => {
-    const user = users.find(u => u.email === email);
+  const login = async (email: string) => {
+    let user = users.find(u => u.email === email);
+    if (!user) {
+      const { data } = await supabase.from('profiles').select('*').eq('email', email).single();
+      if (data) {
+        user = {
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          name: data.name,
+          phone: data.phone,
+          role: data.role as UserRole,
+          permissions: data.permissions,
+          status: data.status
+        };
+        setUsers(prev => [...prev, user!]);
+      }
+    }
     if (user) {
       setCurrentUser(user);
       if (user.role === "admin" || user.role === "data_entry") setActiveScreen("dashboard");
@@ -182,7 +232,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     else if (role === "parent") setActiveScreen("parent-kids");
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
   };
 

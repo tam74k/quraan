@@ -7,7 +7,7 @@ import { UserRole } from '../../types';
 
 export const LoginModal: React.FC = () => {
   const { login, switchRole, centerInfo, students } = useApp();
-  const [email, setEmail] = useState('');
+  const [loginUsername, setLoginUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isForgot, setIsForgot] = useState(false);
@@ -32,15 +32,12 @@ export const LoginModal: React.FC = () => {
     e.preventDefault();
     setError('');
     
-    let loginEmail = email;
-    if (!email.includes('@')) {
-        const { data, error: profileErr } = await supabase.from('profiles').select('email').eq('username', email).single();
-        if (profileErr || !data) {
-            setError('اسم المستخدم غير صحيح أو غير مسجل.');
-            return;
-        }
-        loginEmail = data.email;
+    const { data, error: profileErr } = await supabase.from('profiles').select('email').eq('username', loginUsername).single();
+    if (profileErr || !data) {
+        setError('اسم المستخدم غير صحيح أو غير مسجل.');
+        return;
     }
+    const loginEmail = data.email;
 
     const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
         email: loginEmail,
@@ -52,9 +49,9 @@ export const LoginModal: React.FC = () => {
         return;
     }
 
-    const success = login(loginEmail);
+    const success = await login(loginEmail);
     if (!success) {
-      setError('البريد الإلكتروني غير مسجل، يمكنك استخدام حسابات التجربة السريعة أدناه.');
+      setError('اسم المستخدم غير مسجل، يمكنك استخدام حسابات التجربة السريعة أدناه.');
     }
   };
 
@@ -124,13 +121,13 @@ export const LoginModal: React.FC = () => {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">البريد الإلكتروني أو اسم المستخدم</label>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اسم المستخدم</label>
               <input
                 type="text"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@test.com"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
+                placeholder="أدخل اسم المستخدم"
                 className="w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all"
               />
             </div>
@@ -175,19 +172,35 @@ export const LoginModal: React.FC = () => {
           <form onSubmit={async (e) => {
             e.preventDefault();
             setError('');
-            const res = await supabase.rpc('admin_create_auth_user', {
-              p_email: forgotEmail,
-              p_password: password,
-              p_username: regUsername,
-              p_name: regName,              
-              p_phone: regPhone,
-              p_role: 'parent'
+            const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', regUsername).maybeSingle();
+            if (existingUser) {
+              setError('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
+              return;
+            }
+            const { data, error } = await supabase.auth.signUp({
+              email: forgotEmail,
+              password: password,
+              options: {
+                data: {
+                  username: regUsername,
+                  name: regName,
+                  phone: regPhone,
+                  role: 'parent'
+                }
+              }
             });
-            if (res.error) {
-              setError('حدث خطأ أثناء إنشاء الحساب: ' + res.error.message);
+            if (error) {
+              setError('حدث خطأ أثناء إنشاء الحساب: ' + error.message);
             } else {
-              setForgotMsg('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.');
+              setForgotMsg('تم إنشاء الحساب بنجاح! يتم الآن تسجيل دخولك...');
               setIsRegister(false);
+              // They are automatically signed in by Supabase, wait for context to pick it up or explicitly call login
+              // The session listener in AppContext will detect SIGNED_IN and update state?
+              // Wait, AppContext's fetchInitialData loads profiles. A brand new profile might take a second to propagate.
+              // Let's just reload the page to ensure all state is cleanly built.
+              setTimeout(() => {
+                  window.location.reload();
+              }, 1000);
             }
           }} className="space-y-4">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">إنشاء حساب ولي أمر</h3>
