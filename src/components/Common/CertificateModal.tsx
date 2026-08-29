@@ -79,7 +79,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             {/* Center Header */}
             <div className="my-3 flex flex-col items-center justify-center">
               {centerInfo.logo && (
-                <img src={centerInfo.logo} alt={centerInfo.name} className="w-20 h-20 sm:w-24 sm:h-24 object-contain mb-3 drop-shadow-sm" />
+                <img src={centerInfo.logo} alt={centerInfo.name} className="w-28 h-28 sm:w-32 sm:h-32 object-contain mb-3 drop-shadow-md bg-white p-2 rounded-2xl" />
               )}
               <h2 className="text-xl sm:text-2xl font-black text-emerald-900 dark:text-emerald-300">
                 {centerInfo.name}

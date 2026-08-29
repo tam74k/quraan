@@ -49,6 +49,7 @@ export interface Sheikh {
 }
 
 export interface Admin {
+  userId?: string | null;
   id: number;
   civilId: string;
   name: string;

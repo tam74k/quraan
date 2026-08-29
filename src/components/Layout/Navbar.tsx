@@ -62,9 +62,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNotifications }) => {
           
           {/* Brand Logo & Name */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-amber-300 shadow-md">
+            <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center text-amber-300 shadow-sm border border-slate-100 dark:border-slate-800 p-1">
               {centerInfo.logo ? (
-                <img src={centerInfo.logo} alt="Center Logo" className="w-full h-full object-cover rounded-xl" />
+                <img src={centerInfo.logo} alt="Center Logo" className="w-full h-full object-contain rounded-lg" />
               ) : (
                 <Building2 className="w-5 h-5" />
               )}

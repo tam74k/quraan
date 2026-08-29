@@ -25,6 +25,11 @@ export const AdminsManager: React.FC = () => {
 
   const handleOpenAdd = () => {
     setEditingAdmin(null);
+    setAllowLogin(false);
+    setAuthUsername("");
+    setAuthEmail("");
+    setAuthPassword("");
+    setAuthConfirm("");
     setFormData({
       name: '',
       civilId: '',
@@ -72,6 +77,7 @@ export const AdminsManager: React.FC = () => {
     }
     e.preventDefault();
     const payload = {
+      userId: editingAdmin?.userId || (typeof newAuthId !== "undefined" ? newAuthId : null),
       name: formData.name,
       civilId: formData.civilId,
       phone: formData.phone,
@@ -224,9 +230,7 @@ export const AdminsManager: React.FC = () => {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الرقم المدني</label>
                   <input
-                    type="text"
-                    required
-                    value={formData.civilId}
+                    type="text" value={formData.civilId}
                     onChange={(e) => setFormData({ ...formData, civilId: e.target.value })}
                     placeholder="280010100010"
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-mono"
@@ -256,6 +260,39 @@ export const AdminsManager: React.FC = () => {
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 />
               </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                <label className="flex items-center gap-2 mb-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allowLogin}
+                    onChange={(e) => setAllowLogin(e.target.checked)}
+                    className="w-4 h-4 text-emerald-600 rounded border-slate-300"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">السماح بالدخول على النظام</span>
+                </label>
+                {allowLogin && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1">اسم المستخدم</label>
+                      <input type="text" required={allowLogin} value={authUsername} onChange={e => setAuthUsername(e.target.value)} className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1">البريد الإلكتروني</label>
+                      <input type="email" required={allowLogin} value={authEmail} onChange={e => setAuthEmail(e.target.value)} className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1">كلمة المرور</label>
+                      <input type="password" required={allowLogin} value={authPassword} onChange={e => setAuthPassword(e.target.value)} className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-1">تأكيد كلمة المرور</label>
+                      <input type="password" required={allowLogin} value={authConfirm} onChange={e => setAuthConfirm(e.target.value)} className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button

@@ -393,9 +393,7 @@ export const StudentsManager: React.FC = () => {
                     الرقم المدني (يستخرج الميلاد تلقائياً)
                   </label>
                   <input
-                    type="text"
-                    required
-                    value={formData.civilId}
+                    type="text" value={formData.civilId}
                     onChange={(e) => handleCivilIdChange(e.target.value)}
                     placeholder="مثال: 312051200123"
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-mono"

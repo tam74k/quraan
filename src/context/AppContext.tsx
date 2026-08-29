@@ -249,7 +249,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newSheikh: Sheikh = { ...sheikhData, id: tempId, active: sheikhData.active ?? true };
     setSheikhs(prev => [...prev, newSheikh]);
     supabase.from("sheikhs").insert({
-      name: newSheikh.name, civil_id: newSheikh.civilId, phone: newSheikh.phone, email: newSheikh.email, halqa_name: newSheikh.halqaName, bio: newSheikh.bio, active: newSheikh.active
+      user_id: newSheikh.userId, name: newSheikh.name, civil_id: newSheikh.civilId, phone: newSheikh.phone, email: newSheikh.email, halqa_name: newSheikh.halqaName, bio: newSheikh.bio, active: newSheikh.active
     }).select().single().then(({ data, error }) => {
       if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setSheikhs(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
@@ -260,6 +260,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSheikh = async (id: number, sheikhData: Partial<Sheikh>) => {
     setSheikhs(prev => prev.map(s => (s.id === id ? { ...s, ...sheikhData } : s)));
     const payload: any = {};
+    if (sheikhData.userId !== undefined) payload.user_id = sheikhData.userId;
     if (sheikhData.name !== undefined) payload.name = sheikhData.name;
     if (sheikhData.civilId !== undefined) payload.civil_id = sheikhData.civilId;
     if (sheikhData.phone !== undefined) payload.phone = sheikhData.phone;
@@ -280,7 +281,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newAdmin: Admin = { ...adminData, id: tempId };
     setAdmins(prev => [...prev, newAdmin]);
     supabase.from("admins").insert({
-      name: newAdmin.name, civil_id: newAdmin.civilId, phone: newAdmin.phone, email: newAdmin.email, job_title: newAdmin.jobTitle
+      user_id: newAdmin.userId, name: newAdmin.name, civil_id: newAdmin.civilId, phone: newAdmin.phone, email: newAdmin.email, job_title: newAdmin.jobTitle
     }).select().single().then(({ data, error }) => {
       if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setAdmins(prev => prev.map(a => a.id === tempId ? { ...a, id: data.id } : a));
@@ -291,6 +292,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateAdmin = async (id: number, adminData: Partial<Admin>) => {
     setAdmins(prev => prev.map(a => (a.id === id ? { ...a, ...adminData } : a)));
     const payload: any = {};
+    if (adminData.userId !== undefined) payload.user_id = adminData.userId;
     if (adminData.name !== undefined) payload.name = adminData.name;
     if (adminData.civilId !== undefined) payload.civil_id = adminData.civilId;
     if (adminData.phone !== undefined) payload.phone = adminData.phone;

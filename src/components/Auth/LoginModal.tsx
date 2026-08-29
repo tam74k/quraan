@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { supabase } from '../../lib/supabase';
+
 import { BookOpen, Shield, GraduationCap, Users, UserCheck, ArrowRight, Sparkles } from 'lucide-react';
 import { UserRole } from '../../types';
 
 export const LoginModal: React.FC = () => {
-  const { login, switchRole, centerInfo } = useApp();
+  const { login, switchRole, centerInfo, students } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,6 +16,16 @@ export const LoginModal: React.FC = () => {
   const [regUsername, setRegUsername] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
+  const [childrenCount, setChildrenCount] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (regPhone.length >= 8) {
+      const count = students.filter(s => s.parentPhone === regPhone).length;
+      setChildrenCount(count);
+    } else {
+      setChildrenCount(null);
+    }
+  }, [regPhone, students]);
   const [forgotMsg, setForgotMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,9 +104,9 @@ export const LoginModal: React.FC = () => {
         
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-emerald-800 to-emerald-600 flex items-center justify-center text-amber-300 mx-auto mb-4 shadow-lg overflow-hidden">
+          <div className="w-24 h-24 rounded-3xl bg-white p-2 flex items-center justify-center text-amber-300 mx-auto mb-4 shadow-xl overflow-hidden">
             {centerInfo.logo ? (
-              <img src={centerInfo.logo} alt={centerInfo.name} className="w-full h-full object-cover" />
+              <img src={centerInfo.logo} alt={centerInfo.name} className="w-full h-full object-contain" />
             ) : (
               <BookOpen className="w-8 h-8" />
             )}
@@ -167,7 +179,7 @@ export const LoginModal: React.FC = () => {
               p_email: forgotEmail,
               p_password: password,
               p_username: regUsername,
-              p_name: regName,
+              p_name: regName,              
               p_phone: regPhone,
               p_role: 'parent'
             });
@@ -200,6 +212,13 @@ export const LoginModal: React.FC = () => {
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">رقم الجوال</label>
               <input type="text" required value={regPhone} onChange={(e) => setRegPhone(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
             </div>
+            {childrenCount !== null && (
+              <div className="mt-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                {childrenCount > 0 
+                  ? `تم العثور على ${childrenCount} أبناء مسجلين بهذا الرقم` 
+                  : 'لم يتم العثور على أبناء مسجلين بهذا الرقم في النظام'}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة المرور</label>
               <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600" />
