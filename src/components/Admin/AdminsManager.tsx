@@ -10,9 +10,10 @@ export const AdminsManager: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allowLogin, setAllowLogin] = useState(false);
   const [authUsername, setAuthUsername] = useState('');
-  const [authEmail, setAuthEmail] = useState('');
+  
   const [authPassword, setAuthPassword] = useState('');
   const [authConfirm, setAuthConfirm] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'data_entry'>('admin');
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
 
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ export const AdminsManager: React.FC = () => {
     setEditingAdmin(null);
     setAllowLogin(false);
     setAuthUsername("");
-    setAuthEmail("");
+    
     setAuthPassword("");
     setAuthConfirm("");
     setFormData({
@@ -61,12 +62,12 @@ export const AdminsManager: React.FC = () => {
       }
       e.preventDefault();
       const res = await supabase.rpc('admin_create_auth_user', {
-        p_email: authEmail,
+        p_email: formData.email,
         p_password: authPassword,
         p_username: authUsername,
         p_name: formData.name,
         p_phone: formData.phone,
-        p_role: 'admin'
+        p_role: selectedRole
       });
       if (res.error) {
         alert('فشل إنشاء حساب الدخول: ' + res.error.message);
@@ -94,7 +95,7 @@ export const AdminsManager: React.FC = () => {
           id: `u-adm-${Date.now()}`,
           name: formData.name,
           email: formData.email,
-          role: 'admin',
+          role: selectedRole,
           phone: formData.phone
         });
       }
@@ -236,7 +237,6 @@ export const AdminsManager: React.FC = () => {
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-mono"
                   />
                 </div>
-
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف</label>
                   <input
@@ -250,15 +250,28 @@ export const AdminsManager: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني للدخول</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="admin@test.com"
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="admin@test.com"
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">صلاحية النظام</label>
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value as 'admin' | 'data_entry')}
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  >
+                    <option value="admin">مدير النظام (كامل الصلاحيات)</option>
+                    <option value="data_entry">مدخل بيانات / شؤون طلاب</option>
+                  </select>
+                </div>
               </div>
 
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -271,15 +284,12 @@ export const AdminsManager: React.FC = () => {
                   />
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300">السماح بالدخول على النظام</span>
                 </label>
+                
                 {allowLogin && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 mb-1">اسم المستخدم</label>
                       <input type="text" required={allowLogin} value={authUsername} onChange={e => setAuthUsername(e.target.value)} className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1">البريد الإلكتروني</label>
-                      <input type="email" required={allowLogin} value={authEmail} onChange={e => setAuthEmail(e.target.value)} className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none" />
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 mb-1">كلمة المرور</label>
@@ -292,7 +302,6 @@ export const AdminsManager: React.FC = () => {
                   </div>
                 )}
               </div>
-
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button
