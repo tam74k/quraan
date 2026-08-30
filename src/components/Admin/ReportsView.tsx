@@ -36,16 +36,19 @@ export const ReportsView: React.FC = () => {
     return list;
   };
 
+  
   const dateList = getDatesInRange(dateFrom, dateTo);
-  const activeSheikh = sheikhs.find(s => s.id === selectedSheikhId) || sheikhs[0];
-  const halqaStudents = students.filter(s => s.sheikhId === activeSheikh?.id && (isStudentActive(s) || getStudentDateList(s).length > 0));
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
-
-  const isStudentActive = (student: any) => !student.status || student.status.toLowerCase() === 'active' || student.status === 'نشط';
-  const getStudentDateList = (student: any) => {
+  const isStudentActive = (student) => !student.status || student.status.toLowerCase() === "active" || student.status === "نشط";
+  const getStudentDateList = (student) => {
     if (isStudentActive(student)) return dateList;
     return dateList.filter(dStr => tracking.some(t => t.studentId === student.id && t.date === dStr));
   };
+  const activeSheikh = sheikhs.find(s => s.id === selectedSheikhId) || sheikhs[0];
+  const halqaStudents = students.filter(s => s.sheikhId === activeSheikh?.id && (isStudentActive(s) || getStudentDateList(s).length > 0));
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
+    
+
+  
 
 
     const renderSheikhDailySheet = (sheikh: any, studentsList: any[]) => {
