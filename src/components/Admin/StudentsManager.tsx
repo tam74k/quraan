@@ -41,6 +41,7 @@ export const StudentsManager: React.FC = () => {
 
   // Certificate Modal State
   const [certStudent, setCertStudent] = useState<Student | null>(null);
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -55,10 +56,12 @@ export const StudentsManager: React.FC = () => {
     sheikhId: '' as string | number,
     status: 'Active' as Student['status'],
     notes: '',
-    targetJuz: 5
+    targetJuz: 5,
+    halqaType: ''
   });
 
   const handleOpenAdd = () => {
+    setErrorMsg('');
     setEditingStudent(null);
     setFormData({
       name: '',
@@ -75,12 +78,13 @@ export const StudentsManager: React.FC = () => {
   
       notes: '',
       targetJuz: 5,
-    halqaType: ''
+      halqaType: halqaTypes[0] || ''
     });
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (student: Student) => {
+    setErrorMsg('');
     setEditingStudent(student);
     setFormData({
       name: student.name,
@@ -94,7 +98,7 @@ export const StudentsManager: React.FC = () => {
       status: student.status,
       notes: student.notes || '',
       targetJuz: student.targetJuz || 5,
-    halqaType: student.halqaType || ''
+      halqaType: student.halqaType || ''
     });
     setIsModalOpen(true);
   };
@@ -118,6 +122,16 @@ export const StudentsManager: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
+
+    if (formData.civilId.trim()) {
+      const duplicate = students.some(s => s.civilId === formData.civilId.trim() && (!editingStudent || s.id !== editingStudent.id));
+      if (duplicate) {
+        setErrorMsg('الرقم المدني هذا مسجل مسبقاً لطالب آخر. يرجى التأكد من الرقم.');
+        return;
+      }
+    }
+
     const payload = {
       name: formData.name,
       civilId: formData.civilId,
@@ -130,6 +144,7 @@ export const StudentsManager: React.FC = () => {
       status: formData.status,
       notes: formData.notes,
       targetJuz: Number(formData.targetJuz),
+      halqaType: formData.halqaType,
       joinDate: editingStudent?.joinDate || new Date().toISOString().split('T')[0]
     };
 
@@ -211,7 +226,21 @@ export const StudentsManager: React.FC = () => {
       </div>
 
       {/* Filters & Search Controls */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+
+        {/* Halqa Type Filter */}
+        <div>
+          <select
+            value={halqaTypeFilter}
+            onChange={(e) => setHalqaTypeFilter(e.target.value)}
+            className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          >
+            <option value="all">جميع أنواع الحلقات</option>
+            {halqaTypes.map((ht, idx) => (
+              <option key={idx} value={ht}>{ht}</option>
+            ))}
+          </select>
+        </div>
         
         {/* Search */}
         <div className="relative">
@@ -401,6 +430,12 @@ export const StudentsManager: React.FC = () => {
               </button>
             </div>
 
+            {errorMsg && (
+              <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-bold text-center">
+                {errorMsg}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
@@ -483,6 +518,21 @@ export const StudentsManager: React.FC = () => {
                     <option value="">-- بدون حلقة حالياً --</option>
                     {sheikhs.filter(s => s.active || (editingStudent && s.id === editingStudent.sheikhId)).map(sh => (
                       <option key={sh.id} value={sh.id}>{sh.halqaName} ({sh.name})</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Halqa Type */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نوع الحلقة</label>
+                  <select
+                    value={formData.halqaType}
+                    onChange={(e) => setFormData({ ...formData, halqaType: e.target.value })}
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  >
+                    <option value="">-- اختر نوع الحلقة --</option>
+                    {halqaTypes.map((ht, idx) => (
+                      <option key={idx} value={ht}>{ht}</option>
                     ))}
                   </select>
                 </div>

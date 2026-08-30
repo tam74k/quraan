@@ -63,6 +63,14 @@ export const SheikhsManager: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+
+    if (formData.civilId.trim()) {
+      const duplicateCivil = sheikhs.some(s => s.civilId === formData.civilId.trim() && (!editingSheikh || s.id !== editingSheikh.id));
+      if (duplicateCivil) {
+        setErrorMsg('الرقم المدني هذا مسجل مسبقاً لشيخ آخر.');
+        return;
+      }
+    }
     
     let newAuthId = undefined;
     if (allowLogin) {

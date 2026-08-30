@@ -19,6 +19,7 @@ import { SheikhNotes } from './components/Sheikh/SheikhNotes';
 import { ParentDashboard } from './components/Parent/ParentDashboard';
 import { ParentNotificationsModal } from './components/Parent/ParentNotificationsModal';
 import { ResetPasswordModal } from './components/Auth/ResetPasswordModal';
+import { UserProfileSettings } from './components/Common/UserProfileSettings';
 import { supabase } from './lib/supabase';
 
 const MainLayout: React.FC = () => {
@@ -59,6 +60,8 @@ const MainLayout: React.FC = () => {
         return <SheikhNotes />;
       case 'parent-kids':
         return <ParentDashboard />;
+      case 'profile-settings':
+        return <UserProfileSettings />;
       default:
         return <AdminDashboard />;
     }
@@ -95,7 +98,7 @@ export default function App() {
       }
     );
     
-    if (window.location.hash.includes('type=recovery')) {
+    if (window.location.hash.includes('type=recovery') || window.location.pathname.includes('resetpassword')) {
       setIsRecovering(true);
     }
 
@@ -106,7 +109,10 @@ export default function App() {
 
   if (isRecovering) {
     return (
-      <ResetPasswordModal onComplete={() => { setIsRecovering(false); window.location.hash = ""; }} />
+      <ResetPasswordModal onComplete={() => { 
+        setIsRecovering(false); 
+        window.location.href = '/'; 
+      }} />
     );
   }
 

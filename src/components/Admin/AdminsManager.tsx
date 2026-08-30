@@ -61,6 +61,15 @@ export const AdminsManager: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+
+    if (formData.civilId.trim()) {
+      const duplicateCivil = admins.some(a => a.civilId === formData.civilId.trim() && (!editingAdmin || a.id !== editingAdmin.id));
+      if (duplicateCivil) {
+        setErrorMsg('الرقم المدني هذا مسجل مسبقاً لإداري آخر.');
+        return;
+      }
+    }
+
     if (allowLogin) {
       if (authPassword !== authConfirm) {
         setErrorMsg("كلمة المرور غير متطابقة");

@@ -14,7 +14,8 @@ import {
   BookOpenCheck,
   MessageSquare,
   HeartHandshake,
-  FileCheck2
+  FileCheck2,
+  UserCog
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -37,6 +38,7 @@ export const Sidebar: React.FC = () => {
     { id: 'honor', label: 'لوحة الشرف والأوسمة', icon: Crown, badge: null },
     { id: 'settings', label: 'حسابات الدخول', icon: Settings, badge: null },
     { id: 'center_settings', label: 'إعدادات المركز والنسخ', icon: Building, badge: null },
+    { id: 'profile-settings', label: 'إعدادات الحساب الشخصي', icon: UserCog, badge: null },
   ];
 
   // Sheikh navigation items
@@ -45,13 +47,15 @@ export const Sidebar: React.FC = () => {
     { id: 'sheikh-students', label: 'طلاب حلقتي', icon: GraduationCap, badge: null },
     { id: 'sheikh-notes', label: 'سجل الملاحظات والتواصل', icon: MessageSquare, badge: null },
     { id: 'reports', label: 'استمارات وتقارير الحلقة', icon: FileCheck2, badge: null },
-    { id: 'exams', label: 'سجل اختبارات الأجزاء', icon: Award, badge: null }
+    { id: 'exams', label: 'سجل اختبارات الأجزاء', icon: Award, badge: null },
+    { id: 'profile-settings', label: 'إعدادات الحساب الشخصي', icon: UserCog, badge: null }
   ];
 
   // Parent navigation items
   const parentNavItems = [
     { id: 'parent-kids', label: 'متابعة الأبناء ومصحف الإنجاز', icon: HeartHandshake, badge: null },
-    { id: 'honor', label: 'لوحة الشرف والمتميزين', icon: Crown, badge: null }
+    { id: 'honor', label: 'لوحة الشرف والمتميزين', icon: Crown, badge: null },
+    { id: 'profile-settings', label: 'إعدادات الحساب الشخصي', icon: UserCog, badge: null }
   ];
 
   let items = adminNavItems;
@@ -63,6 +67,7 @@ export const Sidebar: React.FC = () => {
       { id: 'students', label: 'سجل الطلاب', icon: GraduationCap, badge: `${students.length}` },
       { id: 'groups', label: 'توزيع الحلقات', icon: Users2, badge: null },
       { id: 'reports', label: 'التقارير والكشوفات', icon: FileText, badge: null },
+      { id: 'profile-settings', label: 'إعدادات الحساب الشخصي', icon: UserCog, badge: null },
     ];
   }
 

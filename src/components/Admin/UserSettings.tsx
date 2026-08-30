@@ -214,6 +214,14 @@ export const UserSettings: React.FC = () => {
         return;
       }
 
+      if (payload.email) {
+        const duplicateEmail = users.some(u => u.email && u.email.toLowerCase() === payload.email.toLowerCase());
+        if (duplicateEmail) {
+          setModalError('البريد الإلكتروني هذا مستخدم بالفعل لمستخدم آخر.');
+          return;
+        }
+      }
+
       const res = await supabaseSecondary.auth.signUp({
         email: payload.email,
         password: authPassword,
