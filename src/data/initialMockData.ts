@@ -1,0 +1,1 @@
+export const INITIAL_CENTER_INFO: any = {}; export const INITIAL_USERS: any[] = []; export const INITIAL_SHEIKHS: any[] = []; export const INITIAL_ADMINS: any[] = []; export const INITIAL_STUDENTS: any[] = []; export const INITIAL_TRACKING: any[] = []; export const INITIAL_NOTES: any[] = []; export const INITIAL_EXAMS: any[] = []; export const INITIAL_BADGES: any[] = [];
