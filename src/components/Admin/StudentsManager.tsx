@@ -25,12 +25,14 @@ export const StudentsManager: React.FC = () => {
     addStudent,
     updateStudent,
     deleteStudent,
-    extractDOBFromCivilID
+    extractDOBFromCivilID,
+    halqaTypes
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('all');
   const [sheikhFilter, setSheikhFilter] = useState('all');
+  const [halqaTypeFilter, setHalqaTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
   // Modal State
@@ -72,7 +74,8 @@ export const StudentsManager: React.FC = () => {
       status: 'Active',
   
       notes: '',
-      targetJuz: 5
+      targetJuz: 5,
+    halqaType: ''
     });
     setIsModalOpen(true);
   };
@@ -90,7 +93,8 @@ export const StudentsManager: React.FC = () => {
       sheikhId: student.sheikhId || '',
       status: student.status,
       notes: student.notes || '',
-      targetJuz: student.targetJuz || 5
+      targetJuz: student.targetJuz || 5,
+    halqaType: student.halqaType || ''
     });
     setIsModalOpen(true);
   };
@@ -166,7 +170,8 @@ export const StudentsManager: React.FC = () => {
     const matchesGrade = gradeFilter === 'all' || s.grade === gradeFilter;
     const matchesSheikh = sheikhFilter === 'all' || (sheikhFilter === 'none' ? s.sheikhId === null : s.sheikhId === Number(sheikhFilter));
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    return matchesSearch && matchesGrade && matchesSheikh && matchesStatus;
+    const matchesHalqaType = halqaTypeFilter === 'all' || s.halqaType === halqaTypeFilter;
+    return matchesSearch && matchesGrade && matchesSheikh && matchesStatus && matchesHalqaType;
   });
 
   return (

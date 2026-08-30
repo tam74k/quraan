@@ -23,7 +23,8 @@ export const DailyRecitationSheet: React.FC = () => {
     sheikhs,
     currentSheikh,
     tracking,
-    saveBatchTrackingRecords
+    saveBatchTrackingRecords,
+    halqaTypes
   } = useApp();
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'data_entry';

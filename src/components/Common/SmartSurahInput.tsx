@@ -66,7 +66,7 @@ export const SmartSurahInput: React.FC<SmartSurahInputProps> = ({
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 z-50 w-[320px] sm:w-[360px] max-w-[90vw] mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden divide-y divide-slate-100 dark:divide-slate-700/50 animate-in fade-in zoom-in-95 duration-100">
           {filteredSurahs.length > 0 ? (
             filteredSurahs.map((surah) => {
               const isSelected = value === surah.name;

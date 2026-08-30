@@ -105,6 +105,8 @@ export const UserSettings: React.FC = () => {
   });
 
   const [successMsg, setSuccessMsg] = useState('');
+  const [modalError, setModalError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [authUsername, setAuthUsername] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authConfirmPassword, setAuthConfirmPassword] = useState('');
@@ -136,6 +138,7 @@ export const UserSettings: React.FC = () => {
   };
 
   const handleOpenAdd = () => {
+    setModalError("");
     setEditingUser(null);
     setFormData({
       name: '',
@@ -149,6 +152,7 @@ export const UserSettings: React.FC = () => {
   };
 
   const handleOpenEdit = (user: User) => {
+    setModalError("");
     setEditingUser(user);
     setFormData({
       name: user.name,
@@ -192,21 +196,21 @@ export const UserSettings: React.FC = () => {
       setTimeout(() => setSuccessMsg(''), 4000);
     } else {
       if (!authUsername.trim()) {
-        alert('الرجاء إدخال اسم المستخدم.');
+        setModalError('الرجاء إدخال اسم المستخدم.');
         return;
       }
       if (authPassword !== authConfirmPassword) {
-        alert('كلمتا المرور غير متطابقتين.');
+        setModalError('كلمتا المرور غير متطابقتين.');
         return;
       }
       if (authPassword.length < 6) {
-        alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
+        setModalError('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
         return;
       }
 
       const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', authUsername).maybeSingle();
       if (existingUser) {
-        alert('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
+        setModalError('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
         return;
       }
 
@@ -224,7 +228,11 @@ export const UserSettings: React.FC = () => {
       });
 
       if (res.error) {
-        alert('فشل إنشاء حساب الدخول: ' + res.error.message);
+        if (res.error.message.includes('already registered')) {
+          setModalError('البريد الإلكتروني هذا مستخدم بالفعل، الرجاء اختيار بريد آخر.');
+        } else {
+          setModalError('فشل إنشاء حساب الدخول: ' + res.error.message);
+        }
         return;
       }
 
@@ -262,7 +270,8 @@ export const UserSettings: React.FC = () => {
 
   const handleDeleteUser = (user: User) => {
     if (currentUser?.id === user.id || currentUser?.email === user.email) {
-      alert('لا يمكنك حذف الحساب الحالي الذي تم تسجيل الدخول به.');
+      setErrorMsg('لا يمكنك حذف الحساب الحالي الذي تم تسجيل الدخول به.');
+      setTimeout(() => setErrorMsg(''), 4000);
       return;
     }
     if (window.confirm(`هل أنت متأكد من حذف الحساب (${user.name}) نهائياً من النظام؟`)) {

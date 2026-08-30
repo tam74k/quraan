@@ -69,6 +69,7 @@ export interface Student {
   parentPhone: string;
   parentEmail?: string;
   sheikhId: number | null;
+  halqaType?: string;
   status: 'Active' | 'Inactive';
   joinDate: string;
   notes?: string;

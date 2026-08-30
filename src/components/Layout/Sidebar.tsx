@@ -51,7 +51,6 @@ export const Sidebar: React.FC = () => {
   // Parent navigation items
   const parentNavItems = [
     { id: 'parent-kids', label: 'متابعة الأبناء ومصحف الإنجاز', icon: HeartHandshake, badge: null },
-    { id: 'reports', label: 'الاستمارة الشهرية والشهادات', icon: FileText, badge: null },
     { id: 'honor', label: 'لوحة الشرف والمتميزين', icon: Crown, badge: null }
   ];
 

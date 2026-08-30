@@ -16,6 +16,7 @@ export const AdminsManager: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<'admin' | 'data_entry'>('admin');
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
 
+  const [errorMsg, setErrorMsg] = useState("");
   const [formData, setFormData] = useState({
     name: '',
     civilId: '',
@@ -26,6 +27,7 @@ export const AdminsManager: React.FC = () => {
   });
 
   const handleOpenAdd = () => {
+    setErrorMsg("");
     setEditingAdmin(null);
     setAllowLogin(false);
     setAuthUsername("");
@@ -57,16 +59,16 @@ export const AdminsManager: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
     if (allowLogin) {
       if (authPassword !== authConfirm) {
-        alert("كلمة المرور غير متطابقة");
-        e.preventDefault();
+        setErrorMsg("كلمة المرور غير متطابقة");
         return;
       }
-      e.preventDefault();
       const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', authUsername).maybeSingle();
       if (existingUser) {
-        alert('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
+        setErrorMsg('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
         return;
       }
       const res = await supabaseSecondary.auth.signUp({
@@ -82,13 +84,16 @@ export const AdminsManager: React.FC = () => {
         }
       });
       if (res.error) {
-        alert('فشل إنشاء حساب الدخول: ' + res.error.message);
+        if (res.error.message.includes('already registered')) {
+          setErrorMsg('البريد الإلكتروني هذا مستخدم بالفعل، الرجاء اختيار بريد آخر.');
+        } else {
+          setErrorMsg('فشل إنشاء حساب الدخول: ' + res.error.message);
+        }
         return;
       }
       var newAuthId = res.data.user?.id;
       // Assuming we continue to add the actual record
     }
-    e.preventDefault();
     const payload = {
       userId: editingAdmin?.userId || (typeof newAuthId !== "undefined" ? newAuthId : null),
       name: formData.name,

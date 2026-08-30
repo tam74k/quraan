@@ -14,6 +14,7 @@ export const SheikhsManager: React.FC = () => {
   const [authConfirm, setAuthConfirm] = useState('');
   const [editingSheikh, setEditingSheikh] = useState<Sheikh | null>(null);
 
+  const [errorMsg, setErrorMsg] = useState("");
   const [formData, setFormData] = useState({
     name: '',
     civilId: '',
@@ -25,6 +26,7 @@ export const SheikhsManager: React.FC = () => {
   });
 
   const handleOpenAdd = () => {
+    setErrorMsg("");
     setEditingSheikh(null);
     setAllowLogin(false);
     setAuthUsername("");
@@ -44,6 +46,7 @@ export const SheikhsManager: React.FC = () => {
   };
 
   const handleOpenEdit = (sheikh: Sheikh) => {
+    setErrorMsg("");
     setEditingSheikh(sheikh);
     setFormData({
       name: sheikh.name,
@@ -59,16 +62,17 @@ export const SheikhsManager: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg("");
     
     let newAuthId = undefined;
     if (allowLogin) {
       if (authPassword !== authConfirm) {
-        alert("كلمة المرور غير متطابقة");
+        setErrorMsg("كلمة المرور غير متطابقة");
         return;
       }
       const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', authUsername).maybeSingle();
       if (existingUser) {
-        alert('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
+        setErrorMsg('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
         return;
       }
       const res = await supabaseSecondary.auth.signUp({
@@ -84,7 +88,11 @@ export const SheikhsManager: React.FC = () => {
         }
       });
       if (res.error) {
-        alert('فشل إنشاء حساب الدخول: ' + res.error.message);
+        if (res.error.message.includes('already registered')) {
+          setErrorMsg('البريد الإلكتروني هذا مستخدم بالفعل، الرجاء اختيار بريد آخر.');
+        } else {
+          setErrorMsg('فشل إنشاء حساب الدخول: ' + res.error.message);
+        }
         return;
       }
       newAuthId = res.data.user?.id;
