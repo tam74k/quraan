@@ -138,8 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { data: trackingData },
         { data: notesData },
         { data: examsData },
-        { data: badgesData },
-        { data: halqaTypesData }
+        { data: badgesData }
       ] = await Promise.all([
         supabase.from('profiles').select('*'),
         supabase.from('center_info').select('*').limit(1).single(),
@@ -149,8 +148,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('tracking').select('*'),
         supabase.from('notes').select('*'),
         supabase.from('exams').select('*'),
-        supabase.from('badges').select('*'),
-        supabase.from('halqa_types').select('*')
+        supabase.from('badges').select('*')
       ]);
 
       if (profilesData) {
@@ -192,9 +190,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (notesData) setNotes(notesData.map((n: any) => ({ id: n.id, studentId: n.student_id, sheikhId: n.sheikh_id, date: n.date, text: n.text, priority: n.priority, readByParent: n.read_by_parent })));
       if (examsData) setExams(examsData.map((e: any) => ({ id: e.id, studentId: e.student_id, date: e.date, type: e.type, partOrSurah: e.part_or_surah, grade: e.grade, score: e.score, examiner: e.examiner, notes: e.notes })));
       if (badgesData) setBadges(badgesData.map((b: any) => ({ id: b.id, studentId: b.student_id, name: b.name, icon: b.icon, description: b.description, dateEarned: b.date_earned })));
-      if (halqaTypesData && halqaTypesData.length > 0) {
-        setHalqaTypes(halqaTypesData.map((h: any) => h.name));
-      }
+
+      // Fetch halqa_types safely
+      (async () => {
+        try {
+          const { data: halqaTypesData } = await supabase.from("halqa_types").select("*");
+          if (halqaTypesData && halqaTypesData.length > 0) {
+            setHalqaTypes(halqaTypesData.map((h: any) => h.name));
+          }
+        } catch (err) {
+          // ignore
+        }
+      })();
+
       return profilesData;
     } catch (err) {
       console.error("Failed to load initial data from Supabase:", err);
