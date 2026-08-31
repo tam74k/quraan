@@ -45,6 +45,43 @@ export const DailyRecitationSheet: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [activeTrackingStudent, setActiveTrackingStudent] = useState<Student | null>(null);
 
+  // Bulk assignment state for "تسجيل مقرر الحفظ الجديد"
+  const [bulkSurah, setBulkSurah] = useState('');
+  const [bulkFrom, setBulkFrom] = useState<number | ''>('');
+  const [bulkTo, setBulkTo] = useState<number | ''>('');
+  const [bulkSuccess, setBulkSuccess] = useState('');
+
+  const handleApplyBulk = () => {
+    if (!bulkSurah) {
+      alert('يرجى اختيار السورة أولاً.');
+      return;
+    }
+    if (bulkFrom === '' || bulkTo === '') {
+      alert('يرجى تحديد رقم آية البداية ونهاية الآيات.');
+      return;
+    }
+
+    setGridRows(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(sId => {
+        const idNum = Number(sId);
+        // Only apply if student is present (or default)
+        if (updated[idNum].att === 'حضوري' || updated[idNum].att === 'اونلاين') {
+          updated[idNum] = {
+            ...updated[idNum],
+            newSurah: bulkSurah,
+            newFrom: Number(bulkFrom),
+            newTo: Number(bulkTo)
+          };
+        }
+      });
+      return updated;
+    });
+
+    setBulkSuccess(`تم تطبيق مقرر الحفظ الجديد (${bulkSurah} من ${bulkFrom} إلى ${bulkTo}) على جميع طلاب الحلقة في تاريخ ${recitationDate} بنجاح!`);
+    setTimeout(() => setBulkSuccess(''), 4500);
+  };
+
   // Local grid state for swift inline data-entry
   interface RowState {
     studentId: number;
@@ -195,6 +232,73 @@ export const DailyRecitationSheet: React.FC = () => {
             <span>حفظ واعتماد جدول الحلقة</span>
           </button>
         </div>
+      </div>
+
+      {/* Bulk New Memorization Card */}
+      <div className="bg-gradient-to-l from-emerald-900/10 via-slate-900/5 to-emerald-900/5 dark:from-emerald-950/40 dark:to-slate-900/80 p-5 sm:p-6 rounded-3xl border border-emerald-500/30 dark:border-emerald-500/20 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-2xl bg-emerald-600 text-white shadow-md">
+              <Sparkles className="w-5 h-5" />
+            </span>
+            <div>
+              <h3 className="text-base font-black text-slate-800 dark:text-slate-100">تسجيل مقرر الحفظ الجديد (الإدخال الجماعي)</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">اختر السورة والآيات لتطبيقها دفعة واحدة على جميع طلاب الحلقة في التاريخ المحدد أعلاه</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="w-44">
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">السورة</label>
+              <SmartSurahInput
+                value={bulkSurah}
+                onChange={setBulkSurah}
+                placeholder="اختر السورة..."
+              />
+            </div>
+
+            <div className="w-20">
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">من آية</label>
+              <input
+                type="number"
+                min={1}
+                value={bulkFrom === '' ? '' : bulkFrom}
+                onChange={(e) => setBulkFrom(e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="1"
+                className="w-full px-3 py-2 text-center text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              />
+            </div>
+
+            <div className="w-20">
+              <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">إلى آية</label>
+              <input
+                type="number"
+                min={1}
+                value={bulkTo === '' ? '' : bulkTo}
+                onChange={(e) => setBulkTo(e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="10"
+                className="w-full px-3 py-2 text-center text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              />
+            </div>
+
+            <div className="pt-5">
+              <button
+                type="button"
+                onClick={handleApplyBulk}
+                className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-2"
+              >
+                <span>تطبيق على كل الطلاب</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {bulkSuccess && (
+          <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 rounded-xl text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>{bulkSuccess}</span>
+          </div>
+        )}
       </div>
 
       {successMsg && (

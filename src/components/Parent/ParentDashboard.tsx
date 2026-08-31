@@ -7,8 +7,12 @@ import { Student } from '../../types';
 export const ParentDashboard: React.FC = () => {
   const { students, sheikhs, currentUser, tracking, notes } = useApp();
 
-  // Find all children matching logged in parent email
-  const myKids = students.filter(s => s.parentPhone === (currentUser?.phone || ''));
+  // Find all children matching logged in parent
+  const myKids = students.filter(s => 
+    (currentUser?.phone && s.parentPhone === currentUser.phone) ||
+    (currentUser?.email && s.parentEmail && s.parentEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+    (s.parentId === currentUser?.id)
+  );
   const [selectedKid, setSelectedKid] = useState<Student | null>(myKids[0] || null);
 
   if (myKids.length === 0) {

@@ -36,7 +36,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNotifications }) => {
   // Calculate unread count for parent or notifications
   const unreadCount = React.useMemo(() => {
     if (!currentUser || currentUser.role !== 'parent') return 0;
-    const myKidIds = students.filter(s => s.parentEmail === currentUser.email || s.parentId === currentUser.id).map(s => s.id);
+    const myKidIds = students.filter(s => 
+      (currentUser.email && s.parentEmail && s.parentEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (currentUser.phone && s.parentPhone && s.parentPhone === currentUser.phone) ||
+      (s.parentId === currentUser.id)
+    ).map(s => s.id);
     const unreadNotes = notes.filter(n => myKidIds.includes(n.studentId) && !n.readByParent).length;
     const unreadTracking = tracking.filter(t => myKidIds.includes(t.studentId) && t.notes && !t.readByParent).length;
     return unreadNotes + unreadTracking;
