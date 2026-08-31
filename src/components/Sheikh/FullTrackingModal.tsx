@@ -34,13 +34,15 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
 
   const [formData, setFormData] = useState({
     id: undefined as number | undefined,
-    att: 'حضوري' as TrackingRecord['att'],
     newSurah: '',
     newFrom: '' as number | '',
     newTo: '' as number | '',
     revSurah: '',
     revFrom: '' as number | '',
     revTo: '' as number | '',
+    revToSurah: '',
+    revToFrom: '' as number | '',
+    revToTo: '' as number | '',
     bigRevSurah: '',
     bigRevFrom: '' as number | '',
     bigRevTo: '' as number | '',
@@ -56,13 +58,15 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
     if (existing) {
       setFormData({
         id: existing.id,
-        att: existing.att,
         newSurah: existing.newSurah || '',
         newFrom: existing.newFrom ?? '',
         newTo: existing.newTo ?? '',
         revSurah: existing.revSurah || '',
         revFrom: existing.revFrom ?? '',
         revTo: existing.revTo ?? '',
+        revToSurah: existing.revToSurah || '',
+        revToFrom: existing.revToFrom ?? '',
+        revToTo: existing.revToTo ?? '',
         bigRevSurah: existing.bigRevSurah || '',
         bigRevFrom: existing.bigRevFrom ?? '',
         bigRevTo: existing.bigRevTo ?? '',
@@ -74,13 +78,15 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
     } else {
       setFormData({
         id: undefined,
-        att: 'حضوري',
         newSurah: '',
         newFrom: '',
         newTo: '',
         revSurah: '',
         revFrom: '',
         revTo: '',
+        revToSurah: '',
+        revToFrom: '',
+        revToTo: '',
         bigRevSurah: '',
         bigRevFrom: '',
         bigRevTo: '',
@@ -103,10 +109,12 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
       revSurah: formData.revSurah,
       revFrom: formData.revFrom === '' ? null : Number(formData.revFrom),
       revTo: formData.revTo === '' ? null : Number(formData.revTo),
+      revToSurah: formData.revToSurah,
+      revToFrom: formData.revToFrom === '' ? null : Number(formData.revToFrom),
+      revToTo: formData.revToTo === '' ? null : Number(formData.revToTo),
       bigRevSurah: formData.bigRevSurah,
       bigRevFrom: formData.bigRevFrom === '' ? null : Number(formData.bigRevFrom),
       bigRevTo: formData.bigRevTo === '' ? null : Number(formData.bigRevTo),
-      att: formData.att,
       eval: formData.eval,
       tajweedEval: formData.tajweedEval,
       notes: formData.notes,
@@ -185,7 +193,7 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
         {activeTab === 'form' && (
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit('approved'); }} className="space-y-5">
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تاريخ التسميع</label>
                 <input
@@ -194,20 +202,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">حالة الحضور</label>
-                <select
-                  value={formData.att}
-                  onChange={(e) => setFormData({ ...formData, att: e.target.value as TrackingRecord['att'] })}
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-                >
-                  <option value="حضوري">حضوري بالمركز</option>
-                  <option value="اونلاين">أونلاين (عن بعد)</option>
-                  <option value="غائب">غائب</option>
-                  <option value="مستأذن">مستأذن بعذر</option>
-                </select>
               </div>
             </div>
 
@@ -252,20 +246,20 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
               </div>
             </div>
 
-            {/* 2. Revision Section */}
+            {/* 2. Revision Section (Range: من السورة - من آية - إلى آية - إلى السورة - من آية - إلى آية) */}
             <div className="p-4 rounded-2xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 space-y-3">
               <div className="flex items-center gap-2 text-xs font-black text-amber-800 dark:text-amber-300">
                 <Sparkles className="w-4 h-4 text-amber-600" />
-                <span>مقرر المراجعة الصغرى والكبرى</span>
+                <span>مقرر المراجعة (من السورة - من آية - إلى آية - إلى السورة - من آية - إلى آية)</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-1">
-                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">السورة</label>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">من السورة</label>
                   <SmartSurahInput
                     value={formData.revSurah}
                     onChange={(name) => setFormData({ ...formData, revSurah: name })}
-                    placeholder="سورة المراجعة..."
+                    placeholder="سورة البداية..."
                   />
                 </div>
                 <div>
@@ -286,7 +280,40 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.revTo}
                     onChange={(e) => setFormData({ ...formData, revTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="50"
+                    placeholder="20"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-amber-200/50">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">إلى السورة</label>
+                  <SmartSurahInput
+                    value={formData.revToSurah}
+                    onChange={(name) => setFormData({ ...formData, revToSurah: name })}
+                    placeholder="سورة النهاية..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">من آية</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.revToFrom}
+                    onChange={(e) => setFormData({ ...formData, revToFrom: e.target.value === '' ? '' : Number(e.target.value) })}
+                    placeholder="1"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">إلى آية</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.revToTo}
+                    onChange={(e) => setFormData({ ...formData, revToTo: e.target.value === '' ? '' : Number(e.target.value) })}
+                    placeholder="20"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>

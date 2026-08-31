@@ -98,20 +98,17 @@ export const ReportsView: React.FC = () => {
                 <th className="border border-slate-400 p-1 w-32" rowSpan={2}>اسم الطالب</th>
                 <th className="border border-slate-400 p-1 w-20" rowSpan={2}>التاريخ</th>
                 <th className="border border-slate-400 p-1 bg-emerald-100 text-emerald-950" colSpan={3}>الحفظ الجديد</th>
-                <th className="border border-slate-400 p-1 bg-amber-100 text-amber-950" colSpan={3}>المراجعة الصغرى</th>
-                <th className="border border-slate-400 p-1 bg-blue-100 text-blue-950" colSpan={3}>المراجعة الكبرى</th>
-                <th className="border border-slate-400 p-1 w-12" rowSpan={2}>الحضور</th>
+                <th className="border border-slate-400 p-1 bg-amber-100 text-amber-950" colSpan={6}>مقرر المراجعة</th>
                 <th className="border border-slate-400 p-1 w-14" rowSpan={2}>التقييم</th>
-                <th className="border border-slate-400 p-1" rowSpan={2}>ملاحظات وتوجيه الشيخ</th>
               </tr>
               <tr className="bg-slate-100 text-[9px] font-semibold">
                 <th className="border border-slate-400 p-0.5 w-16">السورة</th>
                 <th className="border border-slate-400 p-0.5 w-7">من</th>
                 <th className="border border-slate-400 p-0.5 w-7">إلى</th>
-                <th className="border border-slate-400 p-0.5 w-16">السورة</th>
+                <th className="border border-slate-400 p-0.5 w-16">من السورة</th>
                 <th className="border border-slate-400 p-0.5 w-7">من</th>
                 <th className="border border-slate-400 p-0.5 w-7">إلى</th>
-                <th className="border border-slate-400 p-0.5 w-16">السورة</th>
+                <th className="border border-slate-400 p-0.5 w-16">إلى السورة</th>
                 <th className="border border-slate-400 p-0.5 w-7">من</th>
                 <th className="border border-slate-400 p-0.5 w-7">إلى</th>
               </tr>
@@ -132,14 +129,11 @@ export const ReportsView: React.FC = () => {
                     const revSurah = r?.revSurah || '';
                     const revFrom = r?.revFrom || '';
                     const revTo = r?.revTo || '';
-                    
-                    const bigRevSurah = r?.bigRevSurah || '';
-                    const bigRevFrom = r?.bigRevFrom || '';
-                    const bigRevTo = r?.bigRevTo || '';
+                    const revToSurah = r?.revToSurah || '';
+                    const revToFrom = r?.revToFrom || '';
+                    const revToTo = r?.revToTo || '';
 
-                    const att = r?.att || '';
                     const evalStr = r?.eval || '';
-                    const notes = r?.notes || '';
 
                     return (
                       <tr key={`${st.id}-${dStr}`} className="h-6">
@@ -152,12 +146,10 @@ export const ReportsView: React.FC = () => {
                         <td className="border border-slate-400 p-0.5 whitespace-pre-wrap">{revSurah}</td>
                         <td className="border border-slate-400 font-mono p-0.5 whitespace-pre-wrap">{revFrom}</td>
                         <td className="border border-slate-400 font-mono p-0.5 whitespace-pre-wrap">{revTo}</td>
-                        <td className="border border-slate-400 p-0.5 whitespace-pre-wrap">{bigRevSurah}</td>
-                        <td className="border border-slate-400 font-mono p-0.5 whitespace-pre-wrap">{bigRevFrom}</td>
-                        <td className="border border-slate-400 font-mono p-0.5 whitespace-pre-wrap">{bigRevTo}</td>
-                        <td className="border border-slate-400 font-bold p-0.5 whitespace-pre-wrap">{att}</td>
+                        <td className="border border-slate-400 p-0.5 whitespace-pre-wrap">{revToSurah}</td>
+                        <td className="border border-slate-400 font-mono p-0.5 whitespace-pre-wrap">{revToFrom}</td>
+                        <td className="border border-slate-400 font-mono p-0.5 whitespace-pre-wrap">{revToTo}</td>
                         <td className="border border-slate-400 font-bold p-0.5 text-emerald-900 whitespace-pre-wrap">{evalStr}</td>
-                        <td className="border border-slate-400 text-right px-1 text-[9px] whitespace-pre-wrap">{notes}</td>
                       </tr>
                     );
                   });
@@ -236,21 +228,17 @@ export const ReportsView: React.FC = () => {
                 <th className="border border-slate-400 p-1 w-14" rowSpan={2}>اليوم</th>
                 <th className="border border-slate-400 p-1 w-16" rowSpan={2}>التاريخ</th>
                 <th className="border border-slate-400 p-1 bg-emerald-100 text-emerald-950" colSpan={3}>الحفظ الجديد</th>
-                <th className="border border-slate-400 p-1 bg-amber-100 text-amber-950" colSpan={3}>المراجعة الصغرى</th>
-                <th className="border border-slate-400 p-1 bg-blue-100 text-blue-950" colSpan={3}>المراجعة الكبرى</th>
-                <th className="border border-slate-400 p-1 w-12" rowSpan={2}>الحضور</th>
+                <th className="border border-slate-400 p-1 bg-amber-100 text-amber-950" colSpan={6}>مقرر المراجعة</th>
                 <th className="border border-slate-400 p-1 w-14" rowSpan={2}>التقييم</th>
-                <th className="border border-slate-400 p-1" rowSpan={2}>ملاحظات وتوجيه الشيخ</th>
-                <th className="border border-slate-400 p-1 w-14" rowSpan={2}>توقيع الشيخ</th>
               </tr>
               <tr className="bg-slate-100 text-[9px] font-semibold">
                 <th className="border border-slate-400 p-0.5 w-16">السورة</th>
                 <th className="border border-slate-400 p-0.5 w-7">من</th>
                 <th className="border border-slate-400 p-0.5 w-7">إلى</th>
-                <th className="border border-slate-400 p-0.5 w-16">السورة</th>
+                <th className="border border-slate-400 p-0.5 w-16">من السورة</th>
                 <th className="border border-slate-400 p-0.5 w-7">من</th>
                 <th className="border border-slate-400 p-0.5 w-7">إلى</th>
-                <th className="border border-slate-400 p-0.5 w-16">السورة</th>
+                <th className="border border-slate-400 p-0.5 w-16">إلى السورة</th>
                 <th className="border border-slate-400 p-0.5 w-7">من</th>
                 <th className="border border-slate-400 p-0.5 w-7">إلى</th>
               </tr>
@@ -271,13 +259,10 @@ export const ReportsView: React.FC = () => {
                     <td className="border border-slate-400 p-0.5">{r?.revSurah || ''}</td>
                     <td className="border border-slate-400 font-mono p-0.5">{r?.revFrom || ''}</td>
                     <td className="border border-slate-400 font-mono p-0.5">{r?.revTo || ''}</td>
-                    <td className="border border-slate-400 p-0.5"></td>
-                    <td className="border border-slate-400 p-0.5"></td>
-                    <td className="border border-slate-400 p-0.5"></td>
-                    <td className="border border-slate-400 font-bold p-0.5">{r?.att || ''}</td>
+                    <td className="border border-slate-400 p-0.5">{r?.revToSurah || ''}</td>
+                    <td className="border border-slate-400 font-mono p-0.5">{r?.revToFrom || ''}</td>
+                    <td className="border border-slate-400 font-mono p-0.5">{r?.revToTo || ''}</td>
                     <td className="border border-slate-400 font-bold p-0.5 text-emerald-900">{r?.eval || ''}</td>
-                    <td className="border border-slate-400 text-right px-1 text-[9px]">{r?.notes || ''}</td>
-                    <td className="border border-slate-400 p-0.5"></td>
                   </tr>
                 );
               })}
@@ -339,15 +324,36 @@ export const ReportsView: React.FC = () => {
         {/* Options */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2">
           {[
-            { id: 'halqa_monthly_batch', label: 'استمارات شهرية لجميع طلاب الحلقة (A4 بالعرض)' },
-            { id: 'single_student_monthly', label: 'استمارة شهرية لطالب واحد (A4 بالعرض)' },
+            { id: 'halqa_monthly_batch', label: 'استمارات شهرية لجميع طلاب الحلقة' },
+            { id: 'single_student_monthly', label: 'استمارة شهرية لطالب واحد' },
             { id: 'sheikh_daily', label: 'كشف المتابعة اليومية للحلقة' },
             { id: 'sheikh_students', label: 'كشف طلاب الحلقة' },
             { id: 'all_students', label: 'كشف جميع طلاب المركز' }
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => setReportType(t.id as any)}
+              onClick={() => {
+                setReportType(t.id as any);
+                if (t.id === 'sheikh_daily') {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  setDateFrom(todayStr);
+                  setDateTo(todayStr);
+                } else if (t.id === 'halqa_monthly_batch' || t.id === 'single_student_monthly') {
+                  const now = new Date();
+                  const year = now.getFullYear();
+                  const month = now.getMonth();
+                  const firstDay = new Date(year, month, 1);
+                  const lastDay = new Date(year, month + 1, 0);
+                  const formatDate = (d: Date) => {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
+                  };
+                  setDateFrom(formatDate(firstDay));
+                  setDateTo(formatDate(lastDay));
+                }
+              }}
               className={`p-3 rounded-2xl text-xs font-bold text-center border transition-all cursor-pointer ${
                 reportType === t.id
                   ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-600 text-emerald-800 dark:text-emerald-300 shadow-xs'
@@ -422,7 +428,7 @@ export const ReportsView: React.FC = () => {
         {reportType === 'halqa_monthly_batch' && (
           <div>
             <div className="no-print p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-bold mb-4">
-              جاهز لطباعة ({halqaStudents.length}) استمارة شهرية لطلاب ({activeSheikh?.halqaName}) - كل طالب في صفحة A4 بالعرض منفصلة.
+              جاهز لطباعة ({halqaStudents.length}) استمارة شهرية لطلاب ({activeSheikh?.halqaName}).
             </div>
             {halqaStudents.map(st => renderSingleStudentLandscapeSheet(st, activeSheikh))}
           </div>

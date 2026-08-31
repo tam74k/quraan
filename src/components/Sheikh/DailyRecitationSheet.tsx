@@ -86,13 +86,15 @@ export const DailyRecitationSheet: React.FC = () => {
   interface RowState {
     studentId: number;
     recordId?: number;
-    att: TrackingRecord['att'];
     newSurah: string;
     newFrom: number | '' | null;
     newTo: number | '' | null;
     revSurah: string;
     revFrom: number | '' | null;
     revTo: number | '' | null;
+    revToSurah: string;
+    revToFrom: number | '' | null;
+    revToTo: number | '' | null;
     eval: TrackingRecord['eval'];
     notes: string;
     status: 'draft' | 'approved';
@@ -109,13 +111,15 @@ export const DailyRecitationSheet: React.FC = () => {
         newGrid[st.id] = {
           studentId: st.id,
           recordId: existing.id,
-          att: existing.att,
           newSurah: existing.newSurah || '',
           newFrom: existing.newFrom ?? '',
           newTo: existing.newTo ?? '',
           revSurah: existing.revSurah || '',
           revFrom: existing.revFrom ?? '',
           revTo: existing.revTo ?? '',
+          revToSurah: existing.revToSurah || '',
+          revToFrom: existing.revToFrom ?? '',
+          revToTo: existing.revToTo ?? '',
           eval: existing.eval || '',
           notes: existing.notes || '',
           status: existing.status || 'approved'
@@ -123,13 +127,15 @@ export const DailyRecitationSheet: React.FC = () => {
       } else {
         newGrid[st.id] = {
           studentId: st.id,
-          att: 'حضوري', // default
           newSurah: '',
           newFrom: '',
           newTo: '',
           revSurah: '',
           revFrom: '',
           revTo: '',
+          revToSurah: '',
+          revToFrom: '',
+          revToTo: '',
           eval: 'ممتاز',
           notes: '',
           status: 'approved'
@@ -160,7 +166,9 @@ export const DailyRecitationSheet: React.FC = () => {
       revSurah: row.revSurah,
       revFrom: row.revFrom === '' ? null : Number(row.revFrom),
       revTo: row.revTo === '' ? null : Number(row.revTo),
-      att: row.att,
+      revToSurah: row.revToSurah,
+      revToFrom: row.revToFrom === '' ? null : Number(row.revToFrom),
+      revToTo: row.revToTo === '' ? null : Number(row.revToTo),
       eval: row.eval,
       notes: row.notes,
       status: row.status,
@@ -315,49 +323,49 @@ export const DailyRecitationSheet: React.FC = () => {
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold">
                 <th className="p-4 w-48" rowSpan={2}>الطالب</th>
-                <th className="p-4 w-28 text-center" rowSpan={2}>حالة الحضور</th>
                 <th className="p-2 text-center bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300 border-l border-slate-200 dark:border-slate-700" colSpan={3}>
                   مقرر الحفظ الجديد
                 </th>
-                <th className="p-2 text-center bg-amber-50/50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300 border-l border-slate-200 dark:border-slate-700" colSpan={3}>
-                  مقرر المراجعة
+                <th className="p-2 text-center bg-amber-50/50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300 border-l border-slate-200 dark:border-slate-700" colSpan={6}>
+                  مقرر المراجعة (من السورة - من آية - إلى آية - إلى السورة - من آية - إلى آية)
                 </th>
                 <th className="p-4 w-32 text-center" rowSpan={2}>التقييم</th>
                 <th className="p-4 text-center w-24" rowSpan={2}>استمارة مفصلة</th>
               </tr>
               <tr className="bg-slate-100/70 dark:bg-slate-900/50 text-[11px] border-b border-slate-200 dark:border-slate-700">
-                <th className="p-2 w-36">السورة</th>
-                <th className="p-2 w-16 text-center">من آية</th>
-                <th className="p-2 w-16 text-center border-l border-slate-200 dark:border-slate-700">إلى آية</th>
-                <th className="p-2 w-36">السورة</th>
-                <th className="p-2 w-16 text-center">من آية</th>
-                <th className="p-2 w-16 text-center border-l border-slate-200 dark:border-slate-700">إلى آية</th>
+                <th className="p-2 w-32">السورة</th>
+                <th className="p-2 w-14 text-center">من آية</th>
+                <th className="p-2 w-14 text-center border-l border-slate-200 dark:border-slate-700">إلى آية</th>
+                <th className="p-2 w-32">من السورة</th>
+                <th className="p-2 w-14 text-center">من آية</th>
+                <th className="p-2 w-14 text-center">إلى آية</th>
+                <th className="p-2 w-32 border-r border-slate-200 dark:border-slate-700">إلى السورة</th>
+                <th className="p-2 w-14 text-center">من آية</th>
+                <th className="p-2 w-14 text-center border-l border-slate-200 dark:border-slate-700">إلى آية</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-slate-800 dark:text-slate-200">
               {myStudents.length > 0 ? (
                 myStudents.map(student => {
                   const row = gridRows[student.id] || {
-                    att: 'حضوري',
                     newSurah: '',
                     newFrom: '',
                     newTo: '',
                     revSurah: '',
                     revFrom: '',
                     revTo: '',
+                    revToSurah: '',
+                    revToFrom: '',
+                    revToTo: '',
                     eval: 'ممتاز',
                     notes: '',
                     status: 'approved'
                   };
 
-                  const isAbsent = row.att === 'غائب' || row.att === 'مستأذن';
-
                   return (
                     <tr
                       key={student.id}
-                      className={`hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors ${
-                        isAbsent ? 'opacity-60 bg-rose-50/20 dark:bg-rose-950/10' : ''
-                      }`}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors"
                     >
                       {/* Student Name */}
                       <td className="p-4">
@@ -369,29 +377,14 @@ export const DailyRecitationSheet: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Attendance Select */}
-                      <td className="p-2 text-center">
-                        <select
-                          value={row.att}
-                          onChange={(e) => updateRow(student.id, { att: e.target.value as TrackingRecord['att'] })}
-                          className={`px-2 py-1.5 rounded-xl text-xs font-bold border focus:outline-none ${
-                            row.att === 'حضوري'
-                              ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
-                              : row.att === 'اونلاين'
-                              ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700'
-                              : 'bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-700'
-                          }`}
-                        >
-                          {attOptions.map(opt => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      </td>
-
                       {/* New Memorization */}
                       <td className="p-2">
+                        {row.newSurah && (
+                          <div className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 truncate">
+                            {row.newSurah} {row.newFrom !== '' && row.newTo !== '' ? `(${row.newFrom}-${row.newTo})` : ''}
+                          </div>
+                        )}
                         <SmartSurahInput
-                          disabled={isAbsent}
                           value={row.newSurah}
                           onChange={(name) => updateRow(student.id, { newSurah: name })}
                           placeholder="سورة الحفظ..."
@@ -401,61 +394,92 @@ export const DailyRecitationSheet: React.FC = () => {
                         <input
                           type="number"
                           min={1}
-                          disabled={isAbsent}
                           value={row.newFrom ?? ''}
                           onChange={(e) => updateRow(student.id, { newFrom: e.target.value === '' ? '' : Number(e.target.value) })}
                           placeholder="1"
-                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-40"
+                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
                       <td className="p-2 text-center border-l border-slate-200 dark:border-slate-700">
                         <input
                           type="number"
                           min={1}
-                          disabled={isAbsent}
                           value={row.newTo ?? ''}
                           onChange={(e) => updateRow(student.id, { newTo: e.target.value === '' ? '' : Number(e.target.value) })}
                           placeholder="10"
-                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-40"
+                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
 
-                      {/* Revision */}
+                      {/* Revision Range (6 inputs) */}
                       <td className="p-2">
+                        {row.revSurah && (
+                          <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 mb-1 truncate">
+                            {row.revSurah} {row.revFrom !== '' && row.revTo !== '' ? `(${row.revFrom}-${row.revTo})` : ''}
+                          </div>
+                        )}
                         <SmartSurahInput
-                          disabled={isAbsent}
                           value={row.revSurah}
                           onChange={(name) => updateRow(student.id, { revSurah: name })}
-                          placeholder="سورة المراجعة..."
+                          placeholder="سورة البداية..."
                         />
                       </td>
                       <td className="p-2 text-center">
                         <input
                           type="number"
                           min={1}
-                          disabled={isAbsent}
                           value={row.revFrom ?? ''}
                           onChange={(e) => updateRow(student.id, { revFrom: e.target.value === '' ? '' : Number(e.target.value) })}
                           placeholder="1"
-                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-40"
+                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                        />
+                      </td>
+                      <td className="p-2 text-center">
+                        <input
+                          type="number"
+                          min={1}
+                          value={row.revTo ?? ''}
+                          onChange={(e) => updateRow(student.id, { revTo: e.target.value === '' ? '' : Number(e.target.value) })}
+                          placeholder="20"
+                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
+                        />
+                      </td>
+                      <td className="p-2 border-r border-slate-200 dark:border-slate-700">
+                        {row.revToSurah && (
+                          <div className="text-[10px] font-bold text-amber-700 dark:text-amber-400 mb-1 truncate">
+                            {row.revToSurah} {row.revToFrom !== '' && row.revToTo !== '' ? `(${row.revToFrom}-${row.revToTo})` : ''}
+                          </div>
+                        )}
+                        <SmartSurahInput
+                          value={row.revToSurah}
+                          onChange={(name) => updateRow(student.id, { revToSurah: name })}
+                          placeholder="سورة النهاية..."
+                        />
+                      </td>
+                      <td className="p-2 text-center">
+                        <input
+                          type="number"
+                          min={1}
+                          value={row.revToFrom ?? ''}
+                          onChange={(e) => updateRow(student.id, { revToFrom: e.target.value === '' ? '' : Number(e.target.value) })}
+                          placeholder="1"
+                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
                       <td className="p-2 text-center border-l border-slate-200 dark:border-slate-700">
                         <input
                           type="number"
                           min={1}
-                          disabled={isAbsent}
-                          value={row.revTo ?? ''}
-                          onChange={(e) => updateRow(student.id, { revTo: e.target.value === '' ? '' : Number(e.target.value) })}
+                          value={row.revToTo ?? ''}
+                          onChange={(e) => updateRow(student.id, { revToTo: e.target.value === '' ? '' : Number(e.target.value) })}
                           placeholder="20"
-                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600 disabled:opacity-40"
+                          className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
 
                       {/* Evaluation */}
                       <td className="p-2 text-center">
                         <select
-                          disabled={isAbsent}
                           value={row.eval}
                           onChange={(e) => updateRow(student.id, { eval: e.target.value as TrackingRecord['eval'] })}
                           className={`px-2 py-1.5 rounded-xl text-xs font-bold border focus:outline-none disabled:opacity-40 ${

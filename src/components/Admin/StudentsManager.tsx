@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Student } from '../../types';
+import * as XLSX from 'xlsx';
 import {
   GraduationCap,
   Plus,
@@ -14,7 +15,9 @@ import {
   FileSpreadsheet,
   BookOpen,
   Award,
-  Sparkles
+  Sparkles,
+  Download,
+  Upload
 } from 'lucide-react';
 import { CertificateModal } from '../Common/CertificateModal';
 
@@ -28,6 +31,8 @@ export const StudentsManager: React.FC = () => {
     extractDOBFromCivilID,
     halqaTypes
   } = useApp();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('all');
@@ -179,6 +184,105 @@ export const StudentsManager: React.FC = () => {
     link.click();
   };
 
+  const downloadSampleExcel = () => {
+    const sampleData = [
+      {
+        "الاسم الكامل": "محمد عبدالله أحمد",
+        "الرقم المدني": "31005123456",
+        "المرحلة الدراسية": "المتوسط",
+        "العمر": 13,
+        "اسم ولي الأمر": "عبدالله أحمد",
+        "هاتف ولي الأمر": "0501234567",
+        "نوع الحلقة": halqaTypes[0] || "حلقة التحفيظ العام",
+        "الأجزاء المستهدفة": 5,
+        "ملاحظات": "ممتاز في الحفظ"
+      },
+      {
+        "الاسم الكامل": "إبراهيم خالد عمر",
+        "الرقم المدني": "31206111222",
+        "المرحلة الدراسية": "الابتدائي",
+        "العمر": 10,
+        "اسم ولي الأمر": "خالد عمر",
+        "هاتف ولي الأمر": "0559876543",
+        "نوع الحلقة": halqaTypes[0] || "حلقة التحفيظ العام",
+        "الأجزاء المستهدفة": 10,
+        "ملاحظات": ""
+      }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(sampleData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "الطلاب");
+    XLSX.writeFile(workbook, "students_sample.xlsx");
+  };
+
+  const handleExcelImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.xlsx')) {
+      alert('عذراً، يُرجى رفع ملف Excel بصيغة .xlsx فقط.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json<any>(worksheet);
+
+        if (!json || json.length === 0) {
+          alert('الملف فارغ أو لا يحتوي على بيانات صحيحة.');
+          return;
+        }
+
+        let importedCount = 0;
+        json.forEach((row: any) => {
+          const name = row["الاسم الكامل"] || row["اسم الطالب"] || row["Name"] || '';
+          const civilId = String(row["الرقم المدني"] || row["Civil ID"] || '');
+          const grade = row["المرحلة الدراسية"] || row["المرحلة"] || 'المتوسط';
+          const age = Number(row["العمر"] || 10);
+          const parentName = row["اسم ولي الأمر"] || '';
+          const parentPhone = String(row["هاتف ولي الأمر"] || row["الهاتف"] || '');
+          const halqaTypeName = row["نوع الحلقة"] || halqaTypes[0] || '';
+          const targetJuz = Number(row["الأجزاء المستهدفة"] || 5);
+          const notes = row["ملاحظات"] || '';
+
+          if (name.trim()) {
+            addStudent({
+              name: name.trim(),
+              civilId: civilId.trim(),
+              dob: '',
+              age: isNaN(age) ? 10 : age,
+              grade: grade as any,
+              parentName: parentName.trim(),
+              parentPhone: parentPhone.trim(),
+              sheikhId: sheikhs[0]?.id || null,
+              status: 'Active',
+              notes: notes.trim(),
+              targetJuz: isNaN(targetJuz) ? 5 : targetJuz,
+              halqaType: halqaTypeName,
+              joinDate: new Date().toISOString().split('T')[0]
+            });
+            importedCount++;
+          }
+        });
+
+        alert(`تم بنجاح استيراد ${importedCount} طالب من ملف Excel (.xlsx).`);
+        e.target.value = '';
+      } catch (err) {
+        console.error(err);
+        alert('حدث خطأ أثناء قراءة ملف Excel (.xlsx). تأكد من أن الملف سليم ومتطابق مع تفاصيل ملف العينة.');
+        e.target.value = '';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
   // Filters
   const filteredStudents = students.filter(s => {
     const matchesSearch = s.name.includes(searchQuery) || s.civilId.includes(searchQuery) || s.parentPhone.includes(searchQuery);
@@ -192,6 +296,15 @@ export const StudentsManager: React.FC = () => {
   return (
     <div className="space-y-6">
       
+      {/* Hidden File Input for .xlsx */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleExcelImport}
+        accept=".xlsx"
+        className="hidden"
+      />
+
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs">
         <div>
@@ -206,18 +319,36 @@ export const StudentsManager: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={downloadSampleExcel}
+            className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
+            title="تحميل عينة ملف Excel (.xlsx)"
+          >
+            <Download className="w-4 h-4" />
+            <span>عينة Excel</span>
+          </button>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
+            title="رفع بيانات الطلاب من ملف Excel (.xlsx فقط)"
+          >
+            <Upload className="w-4 h-4" />
+            <span>رفع ملف Excel (.xlsx)</span>
+          </button>
+
           <button
             onClick={exportCSV}
-            className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>تصدير Excel (CSV)</span>
+            <span>تصدير CSV</span>
           </button>
 
           <button
             onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>+ تسجيل طالب جديد</span>

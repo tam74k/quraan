@@ -13,6 +13,7 @@ import { HonorBoardManager } from './components/Admin/HonorBoardManager';
 import { ReportsView } from './components/Admin/ReportsView';
 import { CenterSettings } from './components/Admin/CenterSettings';
 import { UserSettings } from './components/Admin/UserSettings';
+import { ArchiveView } from './components/Admin/ArchiveView';
 import { DailyRecitationSheet } from './components/Sheikh/DailyRecitationSheet';
 import { SheikhStudentsView } from './components/Sheikh/SheikhStudentsView';
 import { SheikhNotes } from './components/Sheikh/SheikhNotes';
@@ -52,6 +53,8 @@ const MainLayout: React.FC = () => {
         return <UserSettings />;
       case 'center_settings':
         return <CenterSettings />;
+      case 'archive':
+        return <ArchiveView />;
       case 'daily-halqa':
         return <DailyRecitationSheet />;
       case 'sheikh-students':

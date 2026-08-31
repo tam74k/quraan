@@ -15,11 +15,12 @@ import {
   MessageSquare,
   HeartHandshake,
   FileCheck2,
-  UserCog
+  UserCog,
+  FolderArchive
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { currentUser, activeScreen, setActiveScreen, students, sheikhs } = useApp();
+  const { currentUser, activeScreen, setActiveScreen, students, sheikhs, archives } = useApp();
 
   if (!currentUser) return null;
 
@@ -36,6 +37,7 @@ export const Sidebar: React.FC = () => {
     { id: 'admins', label: 'الكادر الإداري', icon: ShieldCheck, badge: null },
     { id: 'exams', label: 'الاختبارات والشهادات', icon: Award, badge: 'جديد' },
     { id: 'honor', label: 'لوحة الشرف والأوسمة', icon: Crown, badge: null },
+    { id: 'archive', label: 'قسم الأرشيف', icon: FolderArchive, badge: archives.length ? `${archives.length}` : null },
     { id: 'settings', label: 'حسابات الدخول', icon: Settings, badge: null },
     { id: 'center_settings', label: 'إعدادات المركز والنسخ', icon: Building, badge: null },
     { id: 'profile-settings', label: 'إعدادات الحساب الشخصي', icon: UserCog, badge: null },

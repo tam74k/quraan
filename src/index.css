@@ -24,6 +24,10 @@
 
 /* Print Specific Rules */
 @media print {
+  @page {
+    size: A4 auto;
+    margin: 8mm;
+  }
   .no-print {
     display: none !important;
   }
@@ -31,8 +35,19 @@
     background: #ffffff !important;
     color: #000000 !important;
     background-image: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    zoom: 95%;
   }
   * {
     box-shadow: none !important;
+  }
+  .monthly-sheet-landscape {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    page-break-after: always;
+    break-after: page;
   }
 }

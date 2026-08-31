@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../lib/supabase';
-import { UserCog, KeyRound, Phone, User, CheckCircle2, AlertCircle } from 'lucide-react';
+import { UserCog, KeyRound, Phone, User, CheckCircle2, AlertCircle, Users } from 'lucide-react';
 
 export const UserProfileSettings: React.FC = () => {
-  const { currentUser, updateUser, sheikhs, admins, updateSheikh, updateAdmin } = useApp();
+  const { currentUser, updateUser, sheikhs, admins, updateSheikh, updateAdmin, students, updateStudent } = useApp();
 
   const [name, setName] = useState(currentUser?.name || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [profileError, setProfileError] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
+
+  const [showKidsPhoneModal, setShowKidsPhoneModal] = useState(false);
+  const [newPhoneToUpdate, setNewPhoneToUpdate] = useState('');
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -26,6 +29,8 @@ export const UserProfileSettings: React.FC = () => {
     setProfileError('');
     setProfileSuccess(false);
     setProfileLoading(true);
+
+    const oldPhone = currentUser.phone;
 
     try {
       await updateUser(currentUser.id, { name, phone });
@@ -43,10 +48,40 @@ export const UserProfileSettings: React.FC = () => {
       }
 
       setProfileSuccess(true);
+
+      // Smart Feature: Check if user is parent or has kids and phone changed
+      if (phone && phone !== oldPhone) {
+        const myKids = students.filter(s => 
+          (oldPhone && s.parentPhone === oldPhone) ||
+          (currentUser.email && s.parentEmail && s.parentEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (s.parentId === currentUser.id)
+        );
+        if (myKids.length > 0) {
+          setNewPhoneToUpdate(phone);
+          setShowKidsPhoneModal(true);
+        }
+      }
     } catch (err: any) {
       setProfileError(err.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const handleConfirmUpdateKidsPhone = async () => {
+    try {
+      const myKids = students.filter(s => 
+        (currentUser.phone && s.parentPhone === currentUser.phone) ||
+        (currentUser.email && s.parentEmail && s.parentEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (s.parentId === currentUser.id)
+      );
+      for (const kid of myKids) {
+        await updateStudent(kid.id, { parentPhone: newPhoneToUpdate });
+      }
+      setShowKidsPhoneModal(false);
+      setProfileSuccess(true);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -256,6 +291,42 @@ export const UserProfileSettings: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Smart Feature Modal: Update Kids Phone Number */}
+      {showKidsPhoneModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-emerald-600">
+              <Users className="w-8 h-8 shrink-0" />
+              <div>
+                <h3 className="text-base font-black text-slate-800 dark:text-slate-100">تحديث بيانات الأبناء تلقائياً</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">تم تحديث رقم جوالك الشخصي بنجاح.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              هل ترغب في تحديث رقم ولي الأمر لجميع أبنائك المسجلين تلقائياً ليبقى متطابقاً مع رقم جوالك الجديد (<span className="font-mono font-bold text-emerald-600">{newPhoneToUpdate}</span>)؟
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowKidsPhoneModal(false)}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+              >
+                تخطي
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmUpdateKidsPhone}
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                نعم، قم بتحديث أبنائي تلقائياً
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -320,3 +320,19 @@ ALTER TABLE public.students ADD COLUMN IF NOT EXISTS halqa_type TEXT DEFAULT '';
 
 ALTER TABLE public.halqa_types ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow full access on halqa_types" ON public.halqa_types FOR ALL USING (true);
+
+-- ==============================================================================
+-- 14. جدول الأرشيف (archives) لحفظ الدورات السابقة وسجلات المتابعة
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.archives (
+    id TEXT PRIMARY KEY,
+    archive_date TEXT NOT NULL,
+    archive_time TEXT NOT NULL,
+    archived_by TEXT NOT NULL,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.archives ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow full access on archives" ON public.archives FOR ALL USING (true);
+
