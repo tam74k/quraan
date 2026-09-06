@@ -338,22 +338,23 @@ export const ReportsView: React.FC = () => {
           >
             <thead>
               <tr className="bg-slate-200 font-bold">
-                <th className="border border-slate-500 p-0" style={{ width: '22px' }} rowSpan={2}>م</th>
+                <th className="border border-slate-500 p-0" style={{ width: '20px' }} rowSpan={2}>م</th>
+                <th className="border border-slate-500 p-0" style={{ width: '45px' }} rowSpan={2}>التاريخ</th>
                 <th className="border border-slate-500 p-0 bg-emerald-100 text-emerald-950" colSpan={3}>الحفظ الجديد</th>
                 <th className="border border-slate-500 p-0 bg-amber-100 text-amber-950" colSpan={6}>مقرر المراجعة</th>
-                <th className="border border-slate-500 p-0" style={{ width: '40px' }} rowSpan={2}>التقييم</th>
-                <th className="border border-slate-500 p-0" style={{ width: '90px' }} rowSpan={2}>ملاحظات الشيخ</th>
+                <th className="border border-slate-500 p-0" style={{ width: '38px' }} rowSpan={2}>التقييم</th>
+                <th className="border border-slate-500 p-0" style={{ width: '80px' }} rowSpan={2}>ملاحظات الشيخ</th>
               </tr>
               <tr className="bg-slate-100 font-semibold" style={{ fontSize: '8px' }}>
-                <th className="border border-slate-500 p-0" style={{ width: '55px' }}>السورة</th>
-                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
-                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
-                <th className="border border-slate-500 p-0" style={{ width: '55px' }}>من السورة</th>
-                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
-                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
-                <th className="border border-slate-500 p-0" style={{ width: '55px' }}>إلى السورة</th>
-                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
-                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '52px' }}>السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '52px' }}>من السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '52px' }}>إلى السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }}>إلى</th>
               </tr>
             </thead>
             <tbody>
@@ -363,6 +364,7 @@ export const ReportsView: React.FC = () => {
                   className={`blank-form-row ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
                 >
                   <td className="border border-slate-400 font-bold text-slate-400 text-[8px]">{i + 1}</td>
+                  <td className="border border-slate-400"></td>
                   <td className="border border-slate-400"></td>
                   <td className="border border-slate-400"></td>
                   <td className="border border-slate-400"></td>
