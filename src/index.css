@@ -25,8 +25,8 @@
 /* Print Specific Rules */
 @media print {
   @page {
-    size: A4 auto;
-    margin: 8mm;
+    size: A4 landscape;
+    margin: 5mm;
   }
   .no-print {
     display: none !important;
@@ -37,10 +37,17 @@
     background-image: none !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    zoom: 95%;
   }
   * {
     box-shadow: none !important;
+  }
+  .page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .page-break:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
   .monthly-sheet-landscape {
     width: 100% !important;
@@ -50,4 +57,54 @@
     page-break-after: always;
     break-after: page;
   }
+  .blank-form-page {
+    width: 100% !important;
+    height: 196mm !important;
+    max-height: 196mm !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 2mm !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .blank-form-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  .blank-form-header {
+    flex-shrink: 0 !important;
+    padding-bottom: 1.5mm !important;
+    margin-bottom: 1.5mm !important;
+  }
+  .blank-form-info {
+    flex-shrink: 0 !important;
+    margin-bottom: 1.5mm !important;
+    padding: 1mm 2mm !important;
+  }
+  .blank-form-table-wrap {
+    flex: 1 !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+  }
+  .blank-form-table {
+    height: 100% !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 7.5pt !important;
+  }
+  .blank-form-row {
+    height: 7.2mm !important;
+  }
+  .blank-form-footer {
+    flex-shrink: 0 !important;
+    margin-top: 1.5mm !important;
+    padding-top: 1.5mm !important;
+    font-size: 7.5pt !important;
+  }
 }
+

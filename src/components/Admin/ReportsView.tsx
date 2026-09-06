@@ -14,7 +14,7 @@ export const ReportsView: React.FC = () => {
   const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
   const lastDayOfMonth = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
 
-  const [reportType, setReportType] = useState<'halqa_monthly_batch' | 'single_student_monthly' | 'sheikh_daily' | 'sheikh_students' | 'all_students'>('halqa_monthly_batch');
+  const [reportType, setReportType] = useState<'halqa_monthly_batch' | 'single_student_monthly' | 'sheikh_daily' | 'sheikh_students' | 'all_students' | 'blank_tracking_form'>('halqa_monthly_batch');
   const [selectedSheikhId, setSelectedSheikhId] = useState<number>(sheikhs[0]?.id || 1);
   const [selectedStudentId, setSelectedStudentId] = useState<number>(students[0]?.id || 1);
   const [dateFrom, setDateFrom] = useState<string>(firstDayOfMonth);
@@ -289,6 +289,116 @@ export const ReportsView: React.FC = () => {
     );
   };
 
+  /* ── استمارة فارغة قابلة للطباعة (20 صف، بدون تواريخ، ورقة A4 بالعرض لكل طالب) ── */
+  const renderBlankTrackingForm = (student: any, sheikh: any) => {
+    return (
+      <div
+        key={`blank-${student.id}`}
+        className="blank-form-page page-break bg-white text-slate-900 mb-8 flex flex-col border border-slate-200 rounded-2xl p-4"
+        style={{ fontFamily: "'Cairo', sans-serif" }}
+      >
+        {/* ── Header ── */}
+        <div className="blank-form-header flex justify-between items-center border-b-2 border-emerald-800 pb-2 mb-2">
+          <div className="flex items-center gap-2">
+            {centerInfo.logo && (
+              <img src={centerInfo.logo} alt={centerInfo.name} className="w-10 h-10 object-contain bg-white" />
+            )}
+            <div className="text-right">
+              <h2 className="font-serif font-black text-emerald-950 text-[13px] leading-tight">{centerInfo.name}</h2>
+              <p className="text-[9px] text-slate-500 leading-tight">{centerInfo.address}</p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <div className="border-2 border-emerald-800 bg-emerald-50 px-3 py-0.5 rounded font-black text-[11px] text-emerald-900">
+              استمارة متابعة التسميع والحفظ
+            </div>
+            <div className="text-[8px] text-slate-500 mt-0.5">{centerInfo.academicSeason} — {centerInfo.hijriYear}</div>
+          </div>
+
+          <div className="text-left text-[9px] text-slate-600 leading-relaxed">
+            <div>📞 {centerInfo.phone}</div>
+            <div>✉️ {centerInfo.email}</div>
+          </div>
+        </div>
+
+        {/* ── Student Info Bar ── */}
+        <div className="blank-form-info grid grid-cols-4 gap-2 px-3 py-1 bg-slate-50 border border-slate-300 rounded text-[10px] font-bold mb-1.5">
+          <div>اسم الطالب: <span className="text-emerald-900 font-black text-[12px]">{student.name}</span></div>
+          <div>المرحلة: <span>{student.grade}</span></div>
+          <div>الحلقة: <span className="text-amber-800">{sheikh?.halqaName || 'عامة'}</span></div>
+          <div>المحفظ: <span>{sheikh?.name || 'فضيلة الشيخ'}</span></div>
+        </div>
+
+        {/* ── Table Wrapper (takes remaining space) ── */}
+        <div className="blank-form-table-wrap flex-1 overflow-hidden">
+          <table
+            className="blank-form-table w-full text-center border-collapse border border-slate-500"
+            style={{ tableLayout: 'fixed', fontSize: '9px', height: '100%' }}
+          >
+            <thead>
+              <tr className="bg-slate-200 font-bold">
+                <th className="border border-slate-500 p-0" style={{ width: '22px' }} rowSpan={2}>م</th>
+                <th className="border border-slate-500 p-0 bg-emerald-100 text-emerald-950" colSpan={3}>الحفظ الجديد</th>
+                <th className="border border-slate-500 p-0 bg-amber-100 text-amber-950" colSpan={6}>مقرر المراجعة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '40px' }} rowSpan={2}>التقييم</th>
+                <th className="border border-slate-500 p-0" style={{ width: '90px' }} rowSpan={2}>ملاحظات الشيخ</th>
+              </tr>
+              <tr className="bg-slate-100 font-semibold" style={{ fontSize: '8px' }}>
+                <th className="border border-slate-500 p-0" style={{ width: '55px' }}>السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '55px' }}>من السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '55px' }}>إلى السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 20 }, (_, i) => (
+                <tr
+                  key={i}
+                  className={`blank-form-row ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                >
+                  <td className="border border-slate-400 font-bold text-slate-400 text-[8px]">{i + 1}</td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── Footer Signatures ── */}
+        <div className="blank-form-footer grid grid-cols-3 gap-4 mt-2 pt-1.5 border-t border-slate-300 text-[9px] font-bold text-center">
+          <div>
+            <div>توقيع محفظ الحلقة:</div>
+            <div className="mt-1 font-serif text-emerald-900 text-[10px]">{sheikh?.name || 'فضيلة الشيخ'}</div>
+          </div>
+          <div>
+            <div>توقيع المشرف التربوي:</div>
+            <div className="mt-1 text-slate-400">.................................</div>
+          </div>
+          <div>
+            <div>اعتماد وختم مدير المركز:</div>
+            <div className="mt-1 font-serif text-emerald-900 text-[10px]">{centerInfo.managerName}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       
@@ -322,13 +432,14 @@ export const ReportsView: React.FC = () => {
         </div>
 
         {/* Options */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2">
           {[
             { id: 'halqa_monthly_batch', label: 'استمارات شهرية لجميع طلاب الحلقة' },
             { id: 'single_student_monthly', label: 'استمارة شهرية لطالب واحد' },
             { id: 'sheikh_daily', label: 'كشف المتابعة اليومية للحلقة' },
             { id: 'sheikh_students', label: 'كشف طلاب الحلقة' },
-            { id: 'all_students', label: 'كشف جميع طلاب المركز' }
+            { id: 'all_students', label: 'كشف جميع طلاب المركز' },
+            { id: 'blank_tracking_form', label: '📄 استمارات فارغة للكتابة اليدوية (20 صف — A4 بالعرض)' }
           ].map(t => (
             <button
               key={t.id}
@@ -368,7 +479,7 @@ export const ReportsView: React.FC = () => {
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/60">
           
-          {(reportType === 'halqa_monthly_batch' || reportType === 'single_student_monthly' || reportType === 'sheikh_daily' || reportType === 'sheikh_students') && (
+          {(reportType === 'halqa_monthly_batch' || reportType === 'single_student_monthly' || reportType === 'sheikh_daily' || reportType === 'sheikh_students' || reportType === 'blank_tracking_form') && (
             <div>
               <label className="block text-[11px] font-bold text-slate-500 mb-1">اختر الحلقة / الشيخ</label>
               <select
@@ -538,6 +649,20 @@ export const ReportsView: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* ── استمارات فارغة للكتابة اليدوية ── */}
+        {reportType === 'blank_tracking_form' && (
+          <div>
+            <div className="no-print p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-bold mb-4 flex items-center gap-2">
+              <span>📄</span>
+              <span>
+                جاهز لطباعة ({halqaStudents.length}) استمارة فارغة لطلاب ({activeSheikh?.halqaName}) —
+                كل طالب في ورقة A4 بالعرض منفصلة، 20 صفاً بدون تواريخ للكتابة اليدوية.
+              </span>
+            </div>
+            {halqaStudents.map(st => renderBlankTrackingForm(st, activeSheikh))}
           </div>
         )}
       </div>
