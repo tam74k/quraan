@@ -272,7 +272,6 @@ export const DailyRecitationSheet: React.FC = () => {
                 min={1}
                 value={bulkFrom === '' ? '' : bulkFrom}
                 onChange={(e) => setBulkFrom(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="1"
                 className="w-full px-3 py-2 text-center text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600"
               />
             </div>
@@ -284,7 +283,6 @@ export const DailyRecitationSheet: React.FC = () => {
                 min={1}
                 value={bulkTo === '' ? '' : bulkTo}
                 onChange={(e) => setBulkTo(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="10"
                 className="w-full px-3 py-2 text-center text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600"
               />
             </div>
@@ -396,7 +394,6 @@ export const DailyRecitationSheet: React.FC = () => {
                           min={1}
                           value={row.newFrom ?? ''}
                           onChange={(e) => updateRow(student.id, { newFrom: e.target.value === '' ? '' : Number(e.target.value) })}
-                          placeholder="1"
                           className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
@@ -406,7 +403,6 @@ export const DailyRecitationSheet: React.FC = () => {
                           min={1}
                           value={row.newTo ?? ''}
                           onChange={(e) => updateRow(student.id, { newTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                          placeholder="10"
                           className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
@@ -430,7 +426,6 @@ export const DailyRecitationSheet: React.FC = () => {
                           min={1}
                           value={row.revFrom ?? ''}
                           onChange={(e) => updateRow(student.id, { revFrom: e.target.value === '' ? '' : Number(e.target.value) })}
-                          placeholder="1"
                           className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
@@ -440,7 +435,6 @@ export const DailyRecitationSheet: React.FC = () => {
                           min={1}
                           value={row.revTo ?? ''}
                           onChange={(e) => updateRow(student.id, { revTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                          placeholder="20"
                           className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
@@ -462,7 +456,6 @@ export const DailyRecitationSheet: React.FC = () => {
                           min={1}
                           value={row.revToFrom ?? ''}
                           onChange={(e) => updateRow(student.id, { revToFrom: e.target.value === '' ? '' : Number(e.target.value) })}
-                          placeholder="1"
                           className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>
@@ -472,7 +465,6 @@ export const DailyRecitationSheet: React.FC = () => {
                           min={1}
                           value={row.revToTo ?? ''}
                           onChange={(e) => updateRow(student.id, { revToTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                          placeholder="20"
                           className="w-14 px-2 py-1.5 text-center text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-600"
                         />
                       </td>

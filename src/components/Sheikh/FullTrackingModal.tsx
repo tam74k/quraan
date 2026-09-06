@@ -228,7 +228,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.newFrom}
                     onChange={(e) => setFormData({ ...formData, newFrom: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="1"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>
@@ -239,7 +238,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.newTo}
                     onChange={(e) => setFormData({ ...formData, newTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="20"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>
@@ -269,7 +267,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.revFrom}
                     onChange={(e) => setFormData({ ...formData, revFrom: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="1"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>
@@ -280,7 +277,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.revTo}
                     onChange={(e) => setFormData({ ...formData, revTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="20"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>
@@ -302,7 +298,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.revToFrom}
                     onChange={(e) => setFormData({ ...formData, revToFrom: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="1"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>
@@ -313,7 +308,6 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                     min={1}
                     value={formData.revToTo}
                     onChange={(e) => setFormData({ ...formData, revToTo: e.target.value === '' ? '' : Number(e.target.value) })}
-                    placeholder="20"
                     className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center font-mono"
                   />
                 </div>
