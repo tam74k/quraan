@@ -14,19 +14,27 @@ import {
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
-  const { students, sheikhs, tracking, exams, setActiveScreen } = useApp();
+  const { students, sheikhs, tracking, exams, setActiveScreen, centerInfo } = useApp();
 
-  const today = new Date().toISOString().split('T')[0];
+  const todayDate = new Date();
+  const today = todayDate.toISOString().split('T')[0];
+  
+  const yesterdayDate = new Date(todayDate);
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterday = yesterdayDate.toISOString().split('T')[0];
+
   const todayRecitations = tracking.filter(t => t.date === today && (t.status === 'approved' || t.status === 'draft'));
   const todayPresent = todayRecitations.filter(t => t.att === 'حضوري' || t.att === 'اونلاين').length;
-  const attendanceRate = students.length > 0 ? Math.round((todayPresent / students.length) * 100) : 0;
+  
+  const yesterdayRecitations = tracking.filter(t => t.date === yesterday && (t.status === 'approved' || t.status === 'draft'));
+  const yesterdayPresent = yesterdayRecitations.filter(t => t.att === 'حضوري' || t.att === 'اونلاين').length;
+  
+  const activeStudentsCount = students.filter(s => s.status === 'Active').length;
+  const attendanceRate = activeStudentsCount > 0 ? Math.round((todayPresent / activeStudentsCount) * 100) : 0;
+  const yesterdayAttendanceRate = activeStudentsCount > 0 ? Math.round((yesterdayPresent / activeStudentsCount) * 100) : 0;
+  const attendanceDiff = attendanceRate - yesterdayAttendanceRate;
 
-  // Total memorized ayahs recorded
-  const totalAyahsToday = todayRecitations.reduce((acc, r) => {
-    const newCount = (r.newTo && r.newFrom) ? (r.newTo - r.newFrom + 1) : 0;
-    const revCount = (r.revTo && r.revFrom) ? (r.revTo - r.revFrom + 1) : 0;
-    return acc + newCount + revCount;
-  }, 0);
+
 
   // Group students by grade
   const gradeCounts = students.reduce((acc: Record<string, number>, s) => {
@@ -44,7 +52,7 @@ export const AdminDashboard: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>لوحة المؤشرات والقيادة التربوية</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black mb-2">مرحباً بك في مركز السعد القرآني</h2>
+          <h2 className="text-2xl sm:text-3xl font-black mb-2">مرحباً بك في {centerInfo.name}</h2>
           <p className="text-emerald-100 text-xs sm:text-sm leading-relaxed">
             نظام متكامل لمتابعة الحلقات، تسجيل الحفظ والتسميع، رصد الاختبارات، والتواصل الفعّال مع أولياء الأمور.
           </p>
@@ -76,35 +84,32 @@ export const AdminDashboard: React.FC = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="إجمالي الطلاب المقيدين"
-          value={students.length}
-          subtitle={`${students.filter(s => s.status === 'Active').length} طالب نشط`}
+          title="الطلاب النشطين"
+          value={students.filter(s => s.status === 'Active').length}
+          subtitle={`من إجمالي ${students.length} طالب مقيد`}
           icon={<GraduationCap className="w-6 h-6" />}
           color="emerald"
-          trend={{ value: '+12%', isPositive: true }}
         />
         <StatsCard
-          title="الحلقات والمشايخ"
-          value={sheikhs.length}
-          subtitle={`${sheikhs.filter(s => s.active).length} حلقات مفعلة`}
+          title="المشايخ النشطين"
+          value={sheikhs.filter(s => s.active).length}
+          subtitle={`من إجمالي ${sheikhs.length} شيخ ومحفظ`}
           icon={<Users className="w-6 h-6" />}
           color="blue"
         />
         <StatsCard
           title="نسبة حضور اليوم"
           value={`${attendanceRate}%`}
-          subtitle={`${todayPresent} طالب تم تسميعهم اليوم`}
+          subtitle={`${todayPresent} طالب حاضر اليوم`}
           icon={<CalendarCheck className="w-6 h-6" />}
           color="amber"
-          trend={{ value: '+5%', isPositive: true }}
+          trend={{ 
+            value: `${attendanceDiff > 0 ? '+' : ''}${attendanceDiff}%`, 
+            isPositive: attendanceDiff >= 0,
+            label: 'مقارنة بيوم أمس'
+          }}
         />
-        <StatsCard
-          title="الآيات المسموعة اليوم"
-          value={totalAyahsToday || '145+'}
-          subtitle="حفظ جديد ومراجعة"
-          icon={<BookOpen className="w-6 h-6" />}
-          color="purple"
-        />
+
       </div>
 
       {/* Analytics & Halaqat Overview */}
@@ -176,12 +181,13 @@ export const AdminDashboard: React.FC = () => {
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4">توزيع المراحل الدراسية</h3>
             <div className="space-y-3">
               {Object.entries(gradeCounts).map(([grade, count]) => {
-                const pct = Math.round((count / students.length) * 100) || 0;
+                const numCount = Number(count);
+                const pct = Math.round((numCount / students.length) * 100) || 0;
                 return (
                   <div key={grade}>
                     <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       <span>{grade}</span>
-                      <span className="text-slate-400">{count} طالب ({pct}%)</span>
+                      <span className="text-slate-400">{numCount} طالب ({pct}%)</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
                       <div className="h-full bg-amber-500 rounded-full" style={{ width: `${pct}%` }}></div>

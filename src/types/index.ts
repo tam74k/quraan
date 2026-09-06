@@ -49,6 +49,7 @@ export interface Sheikh {
 }
 
 export interface Admin {
+  userId?: string | null;
   id: number;
   civilId: string;
   name: string;
@@ -66,7 +67,7 @@ export interface Student {
   grade: 'التمهيدي' | 'الابتدائي' | 'المتوسط' | 'الثانوي' | 'الجامعي' | 'عام';
   parentName?: string;
   parentPhone: string;
-  parentEmail: string;
+  parentEmail?: string;
   sheikhId: number | null;
   status: 'Active' | 'Inactive';
   joinDate: string;

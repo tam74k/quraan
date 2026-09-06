@@ -77,7 +77,10 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
 
             {/* Center Header */}
-            <div className="my-3">
+            <div className="my-3 flex flex-col items-center justify-center">
+              {centerInfo.logo && (
+                <img src={centerInfo.logo} alt={centerInfo.name} className="w-28 h-28 sm:w-32 sm:h-32 object-contain mb-3 drop-shadow-md bg-white p-2 rounded-2xl" />
+              )}
               <h2 className="text-xl sm:text-2xl font-black text-emerald-900 dark:text-emerald-300">
                 {centerInfo.name}
               </h2>
@@ -120,7 +123,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             {/* Footer Signatures */}
             <div className="grid grid-cols-2 gap-8 mt-10 pt-6 border-t border-slate-200 dark:border-slate-700 text-xs sm:text-sm">
               <div className="text-center">
-                <div className="font-bold text-slate-700 dark:text-slate-300">شيخ ومعلم الحلقة</div>
+                <div className="font-bold text-slate-700 dark:text-slate-300">شيخ الحلقة</div>
                 <div className="mt-6 font-semibold text-emerald-800 dark:text-emerald-400 font-serif">
                   {sheikhName || 'فضيلة المحفظ'}
                 </div>

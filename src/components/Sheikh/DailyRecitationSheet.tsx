@@ -18,6 +18,7 @@ import {
 
 export const DailyRecitationSheet: React.FC = () => {
   const {
+    currentUser,
     students,
     sheikhs,
     currentSheikh,
@@ -25,8 +26,17 @@ export const DailyRecitationSheet: React.FC = () => {
     saveBatchTrackingRecords
   } = useApp();
 
-  const activeSheikh = currentSheikh || sheikhs[0];
-  const myStudents = students.filter(s => s.sheikhId === activeSheikh?.id && s.status === 'Active');
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'data_entry';
+  const [selectedSheikhId, setSelectedSheikhId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!selectedSheikhId && sheikhs.length > 0) {
+      setSelectedSheikhId(currentSheikh?.id || sheikhs[0].id);
+    }
+  }, [sheikhs, currentSheikh, selectedSheikhId]);
+
+  const activeSheikh = isAdmin ? sheikhs.find(s => s.id === selectedSheikhId) || sheikhs[0] : (currentSheikh || sheikhs[0]);
+  const myStudents = students.filter(s => s.sheikhId === activeSheikh?.id && (s.status === 'Active' || s.status === 'active' || s.status === 'نشط' || !s.status));
 
   const [recitationDate, setRecitationDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -102,9 +112,9 @@ export const DailyRecitationSheet: React.FC = () => {
   };
 
   const handleSaveAll = () => {
-    const payload = Object.values(gridRows).map(row => ({
+    const payload = Object.entries(gridRows).map(([sId, row]: [string, any]) => ({
       id: row.recordId,
-      studentId: row.studentId,
+      studentId: Number(sId),
       date: recitationDate,
       newSurah: row.newSurah,
       newFrom: row.newFrom === '' ? null : Number(row.newFrom),
@@ -151,6 +161,20 @@ export const DailyRecitationSheet: React.FC = () => {
 
         {/* Date Selector & Save All Button */}
         <div className="flex flex-wrap items-center gap-3">
+          {isAdmin && (
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">اختر الحلقة:</span>
+              <select
+                value={activeSheikh?.id || ''}
+                onChange={(e) => setSelectedSheikhId(Number(e.target.value))}
+                className="text-xs font-bold bg-transparent text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer"
+              >
+                {sheikhs.map(s => (
+                  <option key={s.id} value={s.id}>{s.halqaName} ({s.name})</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
             <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">تاريخ التسميع:</span>

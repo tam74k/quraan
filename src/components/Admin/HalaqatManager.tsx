@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Users2, ArrowLeft, ArrowRight, Search, Check, Sparkles, UserPlus, UserMinus } from 'lucide-react';
 
 export const HalaqatManager: React.FC = () => {
   const { sheikhs, students, assignStudentToSheikh } = useApp();
-  const [selectedSheikhId, setSelectedSheikhId] = useState<number>(sheikhs[0]?.id || 1);
+  const activeSheikhs = sheikhs.filter(s => s.active);
+  const [selectedSheikhId, setSelectedSheikhId] = useState<number>(activeSheikhs[0]?.id || 1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'unassigned'>('all');
 
-  const selectedSheikh = sheikhs.find(s => s.id === selectedSheikhId) || sheikhs[0];
+  useEffect(() => {
+    if (activeSheikhs.length > 0 && !activeSheikhs.find(s => s.id === selectedSheikhId)) {
+      setSelectedSheikhId(activeSheikhs[0].id);
+    }
+  }, [activeSheikhs, selectedSheikhId]);
+
+  const selectedSheikh = activeSheikhs.find(s => s.id === selectedSheikhId) || activeSheikhs[0];
+  const activeSelectedId = selectedSheikh?.id || 0;
 
   // Students in selected halqa
-  const assignedStudents = students.filter(s => s.sheikhId === selectedSheikhId && s.status === 'Active');
+  const assignedStudents = students.filter(s => s.sheikhId === activeSelectedId && s.status === 'Active');
 
-  // Available students to assign (either without a sheikh or in other halaqat)
+  // Available students to assign (strictly without a sheikh)
   const candidateStudents = students.filter(s => {
     if (s.status !== 'Active') return false;
-    if (activeTab === 'unassigned') {
-      return s.sheikhId === null;
-    }
-    return s.sheikhId !== selectedSheikhId;
+    return s.sheikhId === null;
   }).filter(s => s.name.includes(searchQuery) || s.civilId.includes(searchQuery));
 
   return (
@@ -43,7 +47,7 @@ export const HalaqatManager: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           {sheikhs.filter(s => s.active).map(sheikh => {
             const count = students.filter(s => s.sheikhId === sheikh.id && s.status === 'Active').length;
-            const isSelected = selectedSheikhId === sheikh.id;
+            const isSelected = activeSelectedId === sheikh.id;
             return (
               <button
                 key={sheikh.id}
@@ -71,25 +75,11 @@ export const HalaqatManager: React.FC = () => {
         <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-xs flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">الطلاب المتاحين للتسكين والنقل</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">الطلاب غير المسكنين (المتاحين للتسكين)</h3>
               <p className="text-xs text-slate-400">انقر على الزر لإضافة الطالب إلى حلقة {selectedSheikh?.name}</p>
             </div>
 
-            {/* Filter tab */}
-            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl text-xs font-semibold">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 shadow-xs' : 'text-slate-500'}`}
-              >
-                الكل
-              </button>
-              <button
-                onClick={() => setActiveTab('unassigned')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${activeTab === 'unassigned' ? 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 shadow-xs' : 'text-slate-500'}`}
-              >
-                غير مسكنين فقط
-              </button>
-            </div>
+
           </div>
 
           {/* Search box */}
@@ -126,8 +116,13 @@ export const HalaqatManager: React.FC = () => {
                     </div>
 
                     <button
-                      onClick={() => assignStudentToSheikh(student.id, selectedSheikhId)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      onClick={() => {
+                        if (activeSelectedId) {
+                          assignStudentToSheikh(student.id, activeSelectedId);
+                        }
+                      }}
+                      disabled={!activeSelectedId}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span>إضافة للحلقة</span>

@@ -18,6 +18,8 @@ import { SheikhStudentsView } from './components/Sheikh/SheikhStudentsView';
 import { SheikhNotes } from './components/Sheikh/SheikhNotes';
 import { ParentDashboard } from './components/Parent/ParentDashboard';
 import { ParentNotificationsModal } from './components/Parent/ParentNotificationsModal';
+import { ResetPasswordModal } from './components/Auth/ResetPasswordModal';
+import { supabase } from './lib/supabase';
 
 const MainLayout: React.FC = () => {
   const { currentUser, activeScreen } = useApp();
@@ -82,6 +84,32 @@ const MainLayout: React.FC = () => {
 };
 
 export default function App() {
+  const [isRecovering, setIsRecovering] = useState(false);
+
+  React.useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsRecovering(true);
+        }
+      }
+    );
+    
+    if (window.location.hash.includes('type=recovery')) {
+      setIsRecovering(true);
+    }
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (isRecovering) {
+    return (
+      <ResetPasswordModal onComplete={() => { setIsRecovering(false); window.location.hash = ""; }} />
+    );
+  }
+
   return (
     <AppProvider>
       <MainLayout />

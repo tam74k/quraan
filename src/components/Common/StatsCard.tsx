@@ -8,6 +8,7 @@ interface StatsCardProps {
   trend?: {
     value: string;
     isPositive: boolean;
+    label?: string;
   };
   color?: 'emerald' | 'amber' | 'blue' | 'purple';
 }
@@ -65,7 +66,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
           <span className={`font-bold ${trend.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
             {trend.value}
           </span>
-          <span className="text-slate-400 dark:text-slate-500">مقارنة بالشهر السابق</span>
+          <span className="text-slate-400 dark:text-slate-500">{trend.label || "مقارنة بالشهر السابق"}</span>
         </div>
       )}
     </div>

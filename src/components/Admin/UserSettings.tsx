@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { supabase, supabaseSecondary } from '../../lib/supabase';
 import { User, UserRole, UserPermissions } from '../../types';
 import {
   Settings,
@@ -104,6 +105,9 @@ export const UserSettings: React.FC = () => {
   });
 
   const [successMsg, setSuccessMsg] = useState('');
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authConfirmPassword, setAuthConfirmPassword] = useState('');
 
   const handleRoleChange = (newRole: UserRole) => {
     setFormData(prev => ({
@@ -170,7 +174,7 @@ export const UserSettings: React.FC = () => {
     setIsPermsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
       name: formData.name.trim(),
@@ -184,16 +188,58 @@ export const UserSettings: React.FC = () => {
     if (editingUser) {
       updateUser(editingUser.id, payload);
       setSuccessMsg(`تم تحديث بيانات وصلاحيات الحساب (${payload.name}) بنجاح.`);
+      setIsModalOpen(false);
+      setTimeout(() => setSuccessMsg(''), 4000);
     } else {
-      addUser({
-        id: `u-${Date.now()}`,
-        ...payload
-      });
-      setSuccessMsg(`تم إنشاء الحساب الجديد (${payload.name}) بنجاح.`);
-    }
+      if (!authUsername.trim()) {
+        alert('الرجاء إدخال اسم المستخدم.');
+        return;
+      }
+      if (authPassword !== authConfirmPassword) {
+        alert('كلمتا المرور غير متطابقتين.');
+        return;
+      }
+      if (authPassword.length < 6) {
+        alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
+        return;
+      }
 
-    setIsModalOpen(false);
-    setTimeout(() => setSuccessMsg(''), 4000);
+      const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', authUsername).maybeSingle();
+      if (existingUser) {
+        alert('اسم المستخدم هذا مستخدم بالفعل، الرجاء اختيار اسم آخر.');
+        return;
+      }
+
+      const res = await supabaseSecondary.auth.signUp({
+        email: payload.email,
+        password: authPassword,
+        options: {
+          data: {
+            username: authUsername.trim(),
+            name: payload.name,
+            phone: payload.phone,
+            role: payload.role
+          }
+        }
+      });
+
+      if (res.error) {
+        alert('فشل إنشاء حساب الدخول: ' + res.error.message);
+        return;
+      }
+
+      const newUserId = res.data.user?.id || `u-${Date.now()}`;
+
+      addUser({
+        id: newUserId,
+        ...payload,
+        username: authUsername.trim() || payload.email.split('@')[0]
+      });
+      
+      setSuccessMsg(`تم إنشاء الحساب الجديد (${payload.name}) بنجاح.`);
+      setIsModalOpen(false);
+      setTimeout(() => setSuccessMsg(''), 4000);
+    }
   };
 
   const handleSavePermsModal = () => {
@@ -430,7 +476,7 @@ export const UserSettings: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني للدخول</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">البريد الإلكتروني</label>
                   <input
                     type="email"
                     required
@@ -449,9 +495,21 @@ export const UserSettings: React.FC = () => {
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   >
                     <option value="admin">مدير نظام (كامل الصلاحيات)</option>
-                    <option value="sheikh">معلم / شيخ محفظ</option>
+                    <option value="sheikh">شيخ محفظ</option>
                     <option value="parent">ولي أمر</option>
                     <option value="data_entry">مدخل بيانات / شؤون طلاب</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">حالة الحساب</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'suspended' })}
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-bold"
+                  >
+                    <option value="active">نشط</option>
+                    <option value="suspended">غير نشط (معطل)</option>
                   </select>
                 </div>
 
@@ -465,6 +523,44 @@ export const UserSettings: React.FC = () => {
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-mono"
                   />
                 </div>
+
+                {!editingUser && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المستخدم</label>
+                      <input
+                        type="text"
+                        required
+                        value={authUsername}
+                        onChange={(e) => setAuthUsername(e.target.value)}
+                        placeholder="أدخل اسم المستخدم للدخول"
+                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">كلمة المرور</label>
+                      <input
+                        type="password"
+                        required
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تأكيد كلمة المرور</label>
+                      <input
+                        type="password"
+                        required
+                        value={authConfirmPassword}
+                        onChange={(e) => setAuthConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Permissions Checkbox Grid */}

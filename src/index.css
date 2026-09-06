@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
 @layer base {
   body {
     font-family: 'Cairo', system-ui, -apple-system, sans-serif;
     background-color: #f8fafc;
     /* Subtle Islamic geometry background */
+
     background-image: radial-gradient(rgba(4, 120, 87, 0.03) 1px, transparent 0);
     background-size: 24px 24px;
   }
@@ -27,5 +32,36 @@
   }
   * {
     box-shadow: none !important;
+  }
+
+  /* صفحة A4 بالعرض */
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  /* فاصل صفحة بعد كل استمارة */
+  .page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .page-break:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* الاستمارة الفارغة: تملأ الصفحة بالكامل */
+  .monthly-sheet-landscape {
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 4mm !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ضمان ارتفاع صفوف الاستمارة الفارغة */
+  .blank-form-row {
+    height: 9.5mm !important;
   }
 }

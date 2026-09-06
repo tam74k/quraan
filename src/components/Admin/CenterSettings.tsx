@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Building, Upload, Download, RotateCcw, Save, CheckCircle2, ShieldAlert, Sparkles } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export const CenterSettings: React.FC = () => {
   const {
@@ -15,14 +16,32 @@ export const CenterSettings: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData(prev => ({ ...prev, logo: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      setIsUploading(true);
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `logo-${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage.from('pics').upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        const { data: publicUrlData } = supabase.storage.from('pics').getPublicUrl(fileName);
+        if (publicUrlData) {
+          setFormData(prev => ({ ...prev, logo: publicUrlData.publicUrl }));
+        }
+      } catch (error: any) {
+        alert('فشل رفع الشعار: ' + error.message);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -181,12 +200,16 @@ export const CenterSettings: React.FC = () => {
                 </div>
               )}
               <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="text-xs text-slate-500 file:mr-0 file:ml-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-950 dark:file:text-emerald-300 cursor-pointer"
-                />
+                {isUploading ? (
+                  <div className="text-xs font-bold text-emerald-600 animate-pulse py-2">جاري الرفع...</div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="text-xs text-slate-500 file:mr-0 file:ml-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-950 dark:file:text-emerald-300 cursor-pointer"
+                  />
+                )}
                 <p className="text-[10px] text-slate-400 mt-1">يُفضل استخدام صورة شفافة (PNG)</p>
               </div>
             </div>

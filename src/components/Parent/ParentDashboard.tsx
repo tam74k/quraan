@@ -8,7 +8,7 @@ export const ParentDashboard: React.FC = () => {
   const { students, sheikhs, currentUser, tracking, notes } = useApp();
 
   // Find all children matching logged in parent email
-  const myKids = students.filter(s => s.parentEmail.toLowerCase() === (currentUser?.email || '').toLowerCase());
+  const myKids = students.filter(s => s.parentPhone === (currentUser?.phone || ''));
   const [selectedKid, setSelectedKid] = useState<Student | null>(myKids[0] || null);
 
   if (myKids.length === 0) {
@@ -16,7 +16,7 @@ export const ParentDashboard: React.FC = () => {
       <div className="p-12 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs">
         <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">لا يوجد أبناء مسجلين بحسابك حالياً</h3>
-        <p className="text-xs text-slate-400 mt-1">يرجى مراجعة إدارة المركز لربط بريدك الإلكتروني مع ملفات أبنائك.</p>
+        <p className="text-xs text-slate-400 mt-1">يرجى مراجعة إدارة المركز لربط رقم جوالك مع ملفات أبنائك.</p>
       </div>
     );
   }

@@ -49,7 +49,7 @@ export const StudentsManager: React.FC = () => {
     grade: 'المتوسط' as Student['grade'],
     parentName: '',
     parentPhone: '',
-    parentEmail: '',
+
     sheikhId: '' as string | number,
     status: 'Active' as Student['status'],
     notes: '',
@@ -64,11 +64,13 @@ export const StudentsManager: React.FC = () => {
       dob: '',
       age: 10,
       grade: 'المتوسط',
+
       parentName: '',
       parentPhone: '',
-      parentEmail: '',
-      sheikhId: sheikhs[0]?.id || '',
+      
+      sheikhId: sheikhs.find(s => s.active)?.id || '',
       status: 'Active',
+  
       notes: '',
       targetJuz: 5
     });
@@ -85,7 +87,6 @@ export const StudentsManager: React.FC = () => {
       grade: student.grade,
       parentName: student.parentName || '',
       parentPhone: student.parentPhone,
-      parentEmail: student.parentEmail,
       sheikhId: student.sheikhId || '',
       status: student.status,
       notes: student.notes || '',
@@ -121,7 +122,6 @@ export const StudentsManager: React.FC = () => {
       grade: formData.grade,
       parentName: formData.parentName,
       parentPhone: formData.parentPhone,
-      parentEmail: formData.parentEmail,
       sheikhId: formData.sheikhId ? Number(formData.sheikhId) : null,
       status: formData.status,
       notes: formData.notes,
@@ -138,17 +138,18 @@ export const StudentsManager: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+
   const handleDelete = (student: Student) => {
-    if (window.confirm(`هل أنت متأكد من رغبتك في حذف الطالب (${student.name}) نهائياً من السجلات؟`)) {
-      deleteStudent(student.id);
-    }
+    deleteStudent(student.id);
+    setDeleteConfirm(null);
   };
 
   const exportCSV = () => {
     const headers = 'الرقم المدني,اسم الطالب,المرحلة,العمر,هاتف ولي الأمر,البريد,الحلقة,الحالة\n';
     const rows = filteredStudents.map(s => {
       const sh = sheikhs.find(shk => shk.id === s.sheikhId);
-      return `"${s.civilId}","${s.name}","${s.grade}","${s.age}","${s.parentPhone}","${s.parentEmail}","${sh ? sh.name : 'غير محدد'}","${s.status}"`;
+      return `"${s.civilId}","${s.name}","${s.grade}","${s.age}","${s.parentPhone}","${sh ? sh.name : 'غير محدد'}","${s.status}"`;
     }).join('\n');
 
     const blob = new Blob(['\uFEFF' + headers + rows], { type: 'text/csv;charset=utf-8;' });
@@ -244,7 +245,7 @@ export const StudentsManager: React.FC = () => {
           >
             <option value="all">جميع الحلقات والمشايخ</option>
             {sheikhs.map(sh => (
-              <option key={sh.id} value={sh.id}>{sh.halqaName} - {sh.name}</option>
+              <option key={sh.id} value={sh.id}>{sh.halqaName} - {sh.name} {!sh.active && '(غير نشط)'}</option>
             ))}
             <option value="none">طلاب بدون حلقة</option>
           </select>
@@ -312,16 +313,19 @@ export const StudentsManager: React.FC = () => {
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
                           <span>{student.parentPhone}</span>
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{student.parentEmail}</div>
-                      </td>
+                                              </td>
                       <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                          student.status === 'Active'
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                        }`}>
+                        <button
+                          onClick={() => updateStudent(student.id, { status: student.status === 'Active' ? 'Inactive' : 'Active' })}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${
+                            student.status === 'Active'
+                              ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-500'
+                          }`}
+                          title="انقر لتغيير حالة الحساب"
+                        >
                           {student.status === 'Active' ? 'نشط' : 'غير نشط'}
-                        </span>
+                        </button>
                       </td>
                       <td className="p-4 text-center">
                         <div className="flex items-center justify-center gap-1.5">
@@ -339,13 +343,21 @@ export const StudentsManager: React.FC = () => {
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(student)}
-                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                            title="حذف الطالب"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {deleteConfirm === student.id ? (
+                            <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-900/30 p-1 rounded-lg">
+                              <span className="text-[10px] text-rose-600 font-bold px-1">حذف؟</span>
+                              <button onClick={() => handleDelete(student)} className="p-1 text-rose-700 hover:bg-rose-200 dark:hover:bg-rose-800 rounded">نعم</button>
+                              <button onClick={() => setDeleteConfirm(null)} className="p-1 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-800 rounded">لا</button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirm(student.id)}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                              title="حذف الطالب"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -393,9 +405,7 @@ export const StudentsManager: React.FC = () => {
                     الرقم المدني (يستخرج الميلاد تلقائياً)
                   </label>
                   <input
-                    type="text"
-                    required
-                    value={formData.civilId}
+                    type="text" value={formData.civilId}
                     onChange={(e) => handleCivilIdChange(e.target.value)}
                     placeholder="مثال: 312051200123"
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-mono"
@@ -456,29 +466,17 @@ export const StudentsManager: React.FC = () => {
                   />
                 </div>
 
-                {/* Parent Email (for login) */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">بريد ولي الأمر (حساب الدخول)</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.parentEmail}
-                    onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
-                    placeholder="parent@test.com"
-                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
-                  />
-                </div>
 
                 {/* Sheikh Assignment */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الحلقة والمعلم المسند إليه</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الحلقة والشيخ المسند إليه</label>
                   <select
                     value={formData.sheikhId}
                     onChange={(e) => setFormData({ ...formData, sheikhId: e.target.value })}
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   >
                     <option value="">-- بدون حلقة حالياً --</option>
-                    {sheikhs.filter(s => s.active).map(sh => (
+                    {sheikhs.filter(s => s.active || (editingStudent && s.id === editingStudent.sheikhId)).map(sh => (
                       <option key={sh.id} value={sh.id}>{sh.halqaName} ({sh.name})</option>
                     ))}
                   </select>
@@ -495,6 +493,19 @@ export const StudentsManager: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, targetJuz: Number(e.target.value) })}
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   />
+                </div>
+
+                {/* Account Status */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">حالة الحساب</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'Active' | 'Inactive' })}
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none font-bold"
+                  >
+                    <option value="Active">نشط</option>
+                    <option value="Inactive">غير نشط (معطل/منسحب)</option>
+                  </select>
                 </div>
 
               </div>
