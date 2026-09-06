@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { QURAN_SURAHS } from '../../data/quranSurahs';
 import { QuranSurah } from '../../types';
-import { BookOpen, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface SmartSurahInputProps {
   value: string;
@@ -60,9 +60,8 @@ export const SmartSurahInput: React.FC<SmartSurahInputProps> = ({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:focus:ring-emerald-500 focus:border-transparent transition-all pr-9"
+          className="w-full px-2.5 py-1.5 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-600 dark:focus:ring-emerald-500 focus:border-transparent transition-all"
         />
-        <BookOpen className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
       </div>
 
       {isOpen && (
