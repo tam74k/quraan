@@ -250,7 +250,7 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
             <div className="p-4 rounded-2xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 space-y-3">
               <div className="flex items-center gap-2 text-xs font-black text-amber-800 dark:text-amber-300">
                 <Sparkles className="w-4 h-4 text-amber-600" />
-                <span>مقرر المراجعة (من السورة - من آية - إلى آية - إلى السورة - من آية - إلى آية)</span>
+                <span>مقرر المراجعة</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

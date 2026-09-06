@@ -327,7 +327,7 @@ export const DailyRecitationSheet: React.FC = () => {
                   مقرر الحفظ الجديد
                 </th>
                 <th className="p-2 text-center bg-amber-50/50 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300 border-l border-slate-200 dark:border-slate-700" colSpan={6}>
-                  مقرر المراجعة (من السورة - من آية - إلى آية - إلى السورة - من آية - إلى آية)
+                  مقرر المراجعة
                 </th>
                 <th className="p-4 w-32 text-center" rowSpan={2}>التقييم</th>
                 <th className="p-4 text-center w-24" rowSpan={2}>استمارة مفصلة</th>
