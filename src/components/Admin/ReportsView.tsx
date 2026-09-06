@@ -38,14 +38,15 @@ export const ReportsView: React.FC = () => {
 
   const dateList = getDatesInRange(dateFrom, dateTo);
   const activeSheikh = sheikhs.find(s => s.id === selectedSheikhId) || sheikhs[0];
-  const halqaStudents = students.filter(s => s.sheikhId === activeSheikh?.id && (isStudentActive(s) || getStudentDateList(s).length > 0));
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
 
   const isStudentActive = (student: any) => !student.status || student.status.toLowerCase() === 'active' || student.status === 'نشط';
   const getStudentDateList = (student: any) => {
     if (isStudentActive(student)) return dateList;
     return dateList.filter(dStr => tracking.some(t => t.studentId === student.id && t.date === dStr));
   };
+
+  const halqaStudents = students.filter(s => s.sheikhId === activeSheikh?.id && (isStudentActive(s) || getStudentDateList(s).length > 0));
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
 
 
     const renderSheikhDailySheet = (sheikh: any, studentsList: any[]) => {
@@ -303,110 +304,110 @@ export const ReportsView: React.FC = () => {
 
   /* ── استمارة فارغة قابلة للطباعة (20 صف، بدون تواريخ، ورقة A4 بالعرض) ── */
   const renderBlankTrackingForm = (student: any, sheikh: any) => {
-    // 20 rows that fill an A4-landscape page after header/footer
     return (
       <div
         key={`blank-${student.id}`}
-        className="monthly-sheet-landscape page-break bg-white text-slate-900 mb-8 print:mb-0"
+        className="blank-form-page page-break bg-white text-slate-900 mb-8 flex flex-col border border-slate-200 rounded-2xl p-4"
         style={{ fontFamily: "'Cairo', sans-serif" }}
       >
         {/* ── Header ── */}
-        <div className="flex justify-between items-center border-b-2 border-emerald-800 pb-2 mb-2 print:pb-1 print:mb-1">
-          <div className="flex items-center gap-3">
+        <div className="blank-form-header flex justify-between items-center border-b-2 border-emerald-800 pb-2 mb-2">
+          <div className="flex items-center gap-2">
             {centerInfo.logo && (
-              <img src={centerInfo.logo} alt={centerInfo.name} className="w-12 h-12 object-contain rounded-xl bg-white" />
+              <img src={centerInfo.logo} alt={centerInfo.name} className="w-10 h-10 object-contain bg-white" />
             )}
             <div className="text-right">
-              <h2 className="font-serif font-black text-emerald-950 text-sm leading-tight">{centerInfo.name}</h2>
-              <p className="text-[10px] text-slate-500">{centerInfo.address}</p>
+              <h2 className="font-serif font-black text-emerald-950 text-[13px] leading-tight">{centerInfo.name}</h2>
+              <p className="text-[9px] text-slate-500 leading-tight">{centerInfo.address}</p>
             </div>
           </div>
 
           <div className="text-center">
-            <div className="border-2 border-emerald-800 bg-emerald-50 px-4 py-1 rounded-lg font-black text-xs text-emerald-900">
+            <div className="border-2 border-emerald-800 bg-emerald-50 px-3 py-0.5 rounded font-black text-[11px] text-emerald-900">
               استمارة متابعة التسميع والحفظ
             </div>
-            <div className="text-[9px] text-slate-500 mt-0.5">{centerInfo.academicSeason} — {centerInfo.hijriYear}</div>
+            <div className="text-[8px] text-slate-500 mt-0.5">{centerInfo.academicSeason} — {centerInfo.hijriYear}</div>
           </div>
 
-          <div className="text-left text-[10px] text-slate-600 space-y-0.5">
+          <div className="text-left text-[9px] text-slate-600 leading-relaxed">
             <div>📞 {centerInfo.phone}</div>
             <div>✉️ {centerInfo.email}</div>
           </div>
         </div>
 
         {/* ── Student Info Bar ── */}
-        <div className="grid grid-cols-3 gap-2 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-[11px] font-bold mb-2 print:mb-1">
-          <div>الطالب: <span className="text-emerald-900 font-black text-sm">{student.name}</span></div>
+        <div className="blank-form-info grid grid-cols-3 gap-1 px-2 py-1 bg-slate-50 border border-slate-300 rounded text-[10px] font-bold mb-1.5">
+          <div>الطالب: <span className="text-emerald-900 font-black text-[12px]">{student.name}</span></div>
           <div>الحلقة: <span className="text-amber-800">{sheikh?.halqaName || '—'}</span></div>
           <div>المحفظ: <span>{sheikh?.name || '—'}</span></div>
         </div>
 
-        {/* ── Table ── */}
-        <table
-          className="w-full text-center border-collapse border border-slate-500 print:text-[8px]"
-          style={{ tableLayout: 'fixed', fontSize: '10px' }}
-        >
-          <thead>
-            <tr className="bg-slate-200 font-bold" style={{ height: '18px' }}>
-              <th className="border border-slate-500 p-0.5" style={{ width: '22px' }} rowSpan={2}>م</th>
-              <th className="border border-slate-500 p-0.5 bg-emerald-100 text-emerald-950" colSpan={3}>الحفظ الجديد</th>
-              <th className="border border-slate-500 p-0.5 bg-amber-100 text-amber-950" colSpan={3}>المراجعة الصغرى</th>
-              <th className="border border-slate-500 p-0.5 bg-blue-100 text-blue-950" colSpan={3}>المراجعة الكبرى</th>
-              <th className="border border-slate-500 p-0.5" style={{ width: '38px' }} rowSpan={2}>الحضور</th>
-              <th className="border border-slate-500 p-0.5" style={{ width: '42px' }} rowSpan={2}>التقييم</th>
-              <th className="border border-slate-500 p-0.5" rowSpan={2}>ملاحظات الشيخ</th>
-            </tr>
-            <tr className="bg-slate-100 font-semibold" style={{ height: '14px', fontSize: '9px' }}>
-              <th className="border border-slate-500 p-0" style={{ width: '60px' }}>السورة</th>
-              <th className="border border-slate-500 p-0" style={{ width: '26px' }}>من</th>
-              <th className="border border-slate-500 p-0" style={{ width: '26px' }}>إلى</th>
-              <th className="border border-slate-500 p-0" style={{ width: '60px' }}>السورة</th>
-              <th className="border border-slate-500 p-0" style={{ width: '26px' }}>من</th>
-              <th className="border border-slate-500 p-0" style={{ width: '26px' }}>إلى</th>
-              <th className="border border-slate-500 p-0" style={{ width: '60px' }}>السورة</th>
-              <th className="border border-slate-500 p-0" style={{ width: '26px' }}>من</th>
-              <th className="border border-slate-500 p-0" style={{ width: '26px' }}>إلى</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: 20 }, (_, i) => (
-              <tr
-                key={i}
-                className={`blank-form-row ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
-                style={{ height: '26px' }}
-              >
-                <td className="border border-slate-400 font-bold text-slate-400" style={{ fontSize: '9px' }}>{i + 1}</td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
-                <td className="border border-slate-400"></td>
+        {/* ── Table Wrapper (takes remaining space) ── */}
+        <div className="blank-form-table-wrap flex-1 overflow-hidden">
+          <table
+            className="blank-form-table w-full text-center border-collapse border border-slate-500"
+            style={{ tableLayout: 'fixed', fontSize: '9px', height: '100%' }}
+          >
+            <thead>
+              <tr className="bg-slate-200 font-bold">
+                <th className="border border-slate-500 p-0" style={{ width: '20px' }} rowSpan={2}>م</th>
+                <th className="border border-slate-500 p-0 bg-emerald-100 text-emerald-950" colSpan={3}>الحفظ الجديد</th>
+                <th className="border border-slate-500 p-0 bg-amber-100 text-amber-950" colSpan={3}>المراجعة الصغرى</th>
+                <th className="border border-slate-500 p-0 bg-blue-100 text-blue-950" colSpan={3}>المراجعة الكبرى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '34px' }} rowSpan={2}>الحضور</th>
+                <th className="border border-slate-500 p-0" style={{ width: '38px' }} rowSpan={2}>التقييم</th>
+                <th className="border border-slate-500 p-0" rowSpan={2}>ملاحظات الشيخ</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+              <tr className="bg-slate-100 font-semibold" style={{ fontSize: '8px' }}>
+                <th className="border border-slate-500 p-0" style={{ width: '58px' }}>السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '58px' }}>السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+                <th className="border border-slate-500 p-0" style={{ width: '58px' }}>السورة</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>من</th>
+                <th className="border border-slate-500 p-0" style={{ width: '24px' }}>إلى</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 20 }, (_, i) => (
+                <tr
+                  key={i}
+                  className={`blank-form-row ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                >
+                  <td className="border border-slate-400 font-bold text-slate-400 text-[8px]">{i + 1}</td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                  <td className="border border-slate-400"></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* ── Footer Signatures ── */}
-        <div className="grid grid-cols-3 gap-4 mt-2 pt-2 border-t border-slate-300 text-[10px] font-bold text-center print:mt-1">
+        <div className="blank-form-footer grid grid-cols-3 gap-4 mt-2 pt-1.5 border-t border-slate-300 text-[9px] font-bold text-center">
           <div>
             <div>توقيع محفظ الحلقة:</div>
-            <div className="mt-2 font-serif text-emerald-900">{sheikh?.name || '—'}</div>
+            <div className="mt-1 font-serif text-emerald-900 text-[10px]">{sheikh?.name || '—'}</div>
           </div>
           <div>
             <div>توقيع المشرف التربوي:</div>
-            <div className="mt-2 text-slate-400">.................................</div>
+            <div className="mt-1 text-slate-400">.................................</div>
           </div>
           <div>
             <div>اعتماد وختم مدير المركز:</div>
-            <div className="mt-2 font-serif text-emerald-900">{centerInfo.managerName}</div>
+            <div className="mt-1 font-serif text-emerald-900 text-[10px]">{centerInfo.managerName}</div>
           </div>
         </div>
       </div>
