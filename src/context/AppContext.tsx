@@ -10,7 +10,8 @@ import {
   TrackingRecord,
   Note,
   Exam,
-  Badge
+  Badge,
+  ArchiveRecord
 } from '../types';
 
 interface AppContextType {
@@ -24,6 +25,11 @@ interface AppContextType {
   notes: Note[];
   exams: Exam[];
   badges: Badge[];
+  archives: ArchiveRecord[];
+  halqaTypes: string[];
+  addHalqaType: (name: string) => void;
+  updateHalqaType: (oldName: string, newName: string) => void;
+  deleteHalqaType: (name: string) => void;
   isDarkMode: boolean;
   activeScreen: string;
   setActiveScreen: (screen: string) => void;
@@ -52,6 +58,8 @@ interface AppContextType {
   markNotesAsRead: (studentIds: number[]) => void;
   addExam: (exam: Omit<Exam, 'id'>) => Exam;
   addBadge: (badge: Omit<Badge, 'id'>) => void;
+  archiveAndResetCurrentData: () => Promise<void>;
+  deleteArchive: (id: string) => void;
   exportDataJSON: () => void;
   importDataJSON: (jsonString: string) => boolean;
   resetToDemoData: () => void;
@@ -72,7 +80,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notes, setNotes] = useState<Note[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [archives, setArchives] = useState<ArchiveRecord[]>([]);
+  const [halqaTypes, setHalqaTypes] = useState<string[]>([
+    "حلقة مميزة",
+    "حلقة نشء",
+    "حلقة تلقين",
+    "حلقة تلقين متقدم",
+    "حلقة تأسيس"
+  ]);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') return true;
+    if (saved === 'light') return false;
+    return document.documentElement.classList.contains('dark');
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
   const [activeScreen, setActiveScreen] = useState('dashboard');
 
   useEffect(() => {
@@ -127,7 +158,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { data: trackingData },
         { data: notesData },
         { data: examsData },
-        { data: badgesData }
+        { data: badgesData },
+        { data: archivesData }
       ] = await Promise.all([
         supabase.from('profiles').select('*'),
         supabase.from('center_info').select('*').limit(1).single(),
@@ -137,7 +169,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('tracking').select('*'),
         supabase.from('notes').select('*'),
         supabase.from('exams').select('*'),
-        supabase.from('badges').select('*')
+        supabase.from('badges').select('*'),
+        supabase.from('archives').select('*').order('created_at', { ascending: false })
       ]);
 
       if (profilesData) {
@@ -174,11 +207,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (sheikhsData) setSheikhs(sheikhsData.map((s: any) => ({ id: s.id, userId: s.user_id, name: s.name, civilId: s.civil_id, phone: s.phone, email: s.email, halqaName: s.halqa_name, bio: s.bio, active: s.active })));
       if (adminsData) setAdmins(adminsData.map((a: any) => ({ id: a.id, userId: a.user_id, name: a.name, civilId: a.civil_id, phone: a.phone, email: a.email, jobTitle: a.job_title })));
-      if (studentsData) setStudents(studentsData.map((s: any) => ({ id: s.id, name: s.name, civilId: s.civil_id, dob: s.dob, age: s.age, grade: s.grade, parentName: s.parent_name, parentPhone: s.parent_phone, parentEmail: s.parent_email, sheikhId: s.sheikh_id, status: s.status, joinDate: s.join_date, currentJuz: s.current_juz, targetJuz: s.target_juz, points: s.points, notes: s.notes })));
-      if (trackingData) setTracking(trackingData.map((t: any) => ({ id: t.id, studentId: t.student_id, sheikhId: t.sheikh_id, date: t.date, newSurah: t.new_surah, newFrom: t.new_from, newTo: t.new_to, revSurah: t.rev_surah, revFrom: t.rev_from, revTo: t.rev_to, bigRevSurah: t.big_rev_surah, bigRevFrom: t.big_rev_from, bigRevTo: t.big_rev_to, att: t.att, eval: t.eval, notes: t.notes, status: t.status, readByParent: t.read_by_parent })));
+      if (studentsData) setStudents(studentsData.map((s: any) => ({ id: s.id, name: s.name, civilId: s.civil_id, dob: s.dob, age: s.age, grade: s.grade, parentName: s.parent_name, parentPhone: s.parent_phone, parentEmail: s.parent_email, sheikhId: s.sheikh_id, status: s.status, joinDate: s.join_date, currentJuz: s.current_juz, targetJuz: s.target_juz, points: s.points, notes: s.notes, halqaType: s.halqa_type || '' })));
+      if (trackingData) setTracking(trackingData.map((t: any) => ({ id: t.id, studentId: t.student_id, sheikhId: t.sheikh_id, date: t.date, newSurah: t.new_surah, newFrom: t.new_from, newTo: t.new_to, revSurah: t.rev_surah, revFrom: t.rev_from, revTo: t.rev_to, revToSurah: t.rev_to_surah, revToFrom: t.rev_to_from, revToTo: t.rev_to_to, bigRevSurah: t.big_rev_surah, bigRevFrom: t.big_rev_from, bigRevTo: t.big_rev_to, att: t.att, eval: t.eval, notes: t.notes, status: t.status, readByParent: t.read_by_parent })));
       if (notesData) setNotes(notesData.map((n: any) => ({ id: n.id, studentId: n.student_id, sheikhId: n.sheikh_id, date: n.date, text: n.text, priority: n.priority, readByParent: n.read_by_parent })));
       if (examsData) setExams(examsData.map((e: any) => ({ id: e.id, studentId: e.student_id, date: e.date, type: e.type, partOrSurah: e.part_or_surah, grade: e.grade, score: e.score, examiner: e.examiner, notes: e.notes })));
       if (badgesData) setBadges(badgesData.map((b: any) => ({ id: b.id, studentId: b.student_id, name: b.name, icon: b.icon, description: b.description, dateEarned: b.date_earned })));
+      if (archivesData) {
+        setArchives(archivesData.map((a: any) => ({
+          id: a.id,
+          date: a.archive_date,
+          time: a.archive_time,
+          archivedBy: a.archived_by,
+          students: a.payload?.students || [],
+          tracking: a.payload?.tracking || [],
+          centerInfo: a.payload?.centerInfo || {},
+          sheikhs: a.payload?.sheikhs || []
+        })));
+      }
+
+      // Fetch halqa_types safely
+      (async () => {
+        try {
+          const { data: halqaTypesData } = await supabase.from("halqa_types").select("*");
+          if (halqaTypesData && halqaTypesData.length > 0) {
+            setHalqaTypes(halqaTypesData.map((h: any) => h.name));
+          }
+        } catch (err) {
+          // ignore
+        }
+      })();
+
       return profilesData;
     } catch (err) {
       console.error("Failed to load initial data from Supabase:", err);
@@ -190,9 +248,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
+    setIsDarkMode(prev => !prev);
   };
 
   const login = async (email: string) => {
@@ -267,7 +323,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newStudent: Student = { ...studentData, id: tempId, joinDate: studentData.joinDate || new Date().toISOString().split("T")[0], status: studentData.status || "Active", points: studentData.points || 0 };
     setStudents(prev => [newStudent, ...prev]);
     supabase.from("students").insert({
-      name: newStudent.name, civil_id: newStudent.civilId, dob: newStudent.dob, age: newStudent.age, grade: newStudent.grade, parent_name: newStudent.parentName, parent_phone: newStudent.parentPhone, parent_email: newStudent.parentEmail, sheikh_id: newStudent.sheikhId, status: newStudent.status, join_date: newStudent.joinDate, current_juz: newStudent.currentJuz, target_juz: newStudent.targetJuz, points: newStudent.points, notes: newStudent.notes
+      name: newStudent.name, civil_id: newStudent.civilId, dob: newStudent.dob, age: newStudent.age, grade: newStudent.grade, parent_name: newStudent.parentName, parent_phone: newStudent.parentPhone, parent_email: newStudent.parentEmail, sheikh_id: newStudent.sheikhId, status: newStudent.status, join_date: newStudent.joinDate, current_juz: newStudent.currentJuz, target_juz: newStudent.targetJuz, points: newStudent.points, notes: newStudent.notes, halqa_type: newStudent.halqaType || ''
     }).select().single().then(({ data, error }) => {
       if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setStudents(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
@@ -293,6 +349,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (studentData.targetJuz !== undefined) updatePayload.target_juz = studentData.targetJuz;
     if (studentData.points !== undefined) updatePayload.points = studentData.points;
     if (studentData.notes !== undefined) updatePayload.notes = studentData.notes;
+    if (studentData.halqaType !== undefined) updatePayload.halqa_type = studentData.halqaType;
     const __res = await supabase.from("students").update(updatePayload).eq("id", id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
@@ -470,6 +527,9 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
         rev_surah: record.revSurah,
         rev_from: record.revFrom,
         rev_to: record.revTo,
+        rev_to_surah: record.revToSurah,
+        rev_to_from: record.revToFrom,
+        rev_to_to: record.revToTo,
         big_rev_surah: record.bigRevSurah,
         big_rev_from: record.bigRevFrom,
         big_rev_to: record.bigRevTo,
@@ -499,6 +559,9 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
         revSurah: t.rev_surah,
         revFrom: t.rev_from,
         revTo: t.rev_to,
+        revToSurah: t.rev_to_surah,
+        revToFrom: t.rev_to_from,
+        revToTo: t.rev_to_to,
         bigRevSurah: t.big_rev_surah,
         bigRevFrom: t.big_rev_from,
         bigRevTo: t.big_rev_to,
@@ -563,6 +626,87 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
     });
   };
 
+  const addHalqaType = async (name: string) => {
+    if (!name.trim() || halqaTypes.includes(name.trim())) return;
+    const trimmed = name.trim();
+    setHalqaTypes(prev => [...prev, trimmed]);
+    const { error } = await supabase.from('halqa_types').insert({ name: trimmed });
+    if (error) console.error("Error adding halqa type:", error);
+  };
+
+  const updateHalqaType = async (oldName: string, newName: string) => {
+    if (!newName.trim() || halqaTypes.includes(newName.trim())) return;
+    const trimmed = newName.trim();
+    setHalqaTypes(prev => prev.map(t => t === oldName ? trimmed : t));
+    const { error } = await supabase.from('halqa_types').update({ name: trimmed }).eq('name', oldName);
+    if (error) console.error("Error updating halqa type:", error);
+  };
+
+  const deleteHalqaType = async (name: string) => {
+    setHalqaTypes(prev => prev.filter(t => t !== name));
+    const { error } = await supabase.from('halqa_types').delete().eq('name', name);
+    if (error) console.error("Error deleting halqa type:", error);
+  };
+
+  const archiveAndResetCurrentData = async () => {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    const archivedBy = currentUser?.name || currentUser?.email || 'المدير العام';
+
+    const newArchive: ArchiveRecord = {
+      id: `archive-${Date.now()}`,
+      date: dateStr,
+      time: timeStr,
+      archivedBy,
+      students: [...students],
+      tracking: [...tracking],
+      centerInfo: { ...centerInfo },
+      sheikhs: [...sheikhs]
+    };
+
+    // Save archive to Supabase database
+    try {
+      await supabase.from('archives').insert({
+        id: newArchive.id,
+        archive_date: newArchive.date,
+        archive_time: newArchive.time,
+        archived_by: newArchive.archivedBy,
+        payload: {
+          students: newArchive.students,
+          tracking: newArchive.tracking,
+          centerInfo: newArchive.centerInfo,
+          sheikhs: newArchive.sheikhs
+        }
+      });
+    } catch (err) {
+      console.error("Error saving archive to database:", err);
+    }
+
+    setArchives(prev => [newArchive, ...prev]);
+
+    // Clear local students and tracking
+    setStudents([]);
+    setTracking([]);
+
+    // Clear from database
+    try {
+      await supabase.from('tracking').delete().neq('id', 0);
+      await supabase.from('students').delete().neq('id', 0);
+    } catch (err) {
+      console.error("Error clearing database for new cycle:", err);
+    }
+  };
+
+  const deleteArchive = async (id: string) => {
+    setArchives(prev => prev.filter(a => a.id !== id));
+    try {
+      await supabase.from('archives').delete().eq('id', id);
+    } catch (err) {
+      console.error("Error deleting archive from database:", err);
+    }
+  };
+
   const exportDataJSON = () => { /* legacy */ };
   const importDataJSON = (jsonString: string): boolean => { return false; /* legacy */ };
   const resetToDemoData = () => { /* legacy */ };
@@ -592,6 +736,13 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
         updateCenterInfo, addStudent, updateStudent, deleteStudent, addSheikh, updateSheikh, deleteSheikh,
         addAdmin, updateAdmin, deleteAdmin, addUser, updateUser, deleteUser, assignStudentToSheikh, saveTrackingRecord,
         saveBatchTrackingRecords, deleteTrackingRecord, addNote, markNotesAsRead, addExam, addBadge,
+        halqaTypes,
+        addHalqaType,
+        updateHalqaType,
+        deleteHalqaType,
+        archives,
+        archiveAndResetCurrentData,
+        deleteArchive,
         exportDataJSON, importDataJSON, resetToDemoData, extractDOBFromCivilID, currentSheikh
       }}
     >

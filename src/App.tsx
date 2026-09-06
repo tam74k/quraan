@@ -13,12 +13,14 @@ import { HonorBoardManager } from './components/Admin/HonorBoardManager';
 import { ReportsView } from './components/Admin/ReportsView';
 import { CenterSettings } from './components/Admin/CenterSettings';
 import { UserSettings } from './components/Admin/UserSettings';
+import { ArchiveView } from './components/Admin/ArchiveView';
 import { DailyRecitationSheet } from './components/Sheikh/DailyRecitationSheet';
 import { SheikhStudentsView } from './components/Sheikh/SheikhStudentsView';
 import { SheikhNotes } from './components/Sheikh/SheikhNotes';
 import { ParentDashboard } from './components/Parent/ParentDashboard';
 import { ParentNotificationsModal } from './components/Parent/ParentNotificationsModal';
 import { ResetPasswordModal } from './components/Auth/ResetPasswordModal';
+import { UserProfileSettings } from './components/Common/UserProfileSettings';
 import { supabase } from './lib/supabase';
 
 const MainLayout: React.FC = () => {
@@ -51,6 +53,8 @@ const MainLayout: React.FC = () => {
         return <UserSettings />;
       case 'center_settings':
         return <CenterSettings />;
+      case 'archive':
+        return <ArchiveView />;
       case 'daily-halqa':
         return <DailyRecitationSheet />;
       case 'sheikh-students':
@@ -59,6 +63,8 @@ const MainLayout: React.FC = () => {
         return <SheikhNotes />;
       case 'parent-kids':
         return <ParentDashboard />;
+      case 'profile-settings':
+        return <UserProfileSettings />;
       default:
         return <AdminDashboard />;
     }
@@ -95,7 +101,7 @@ export default function App() {
       }
     );
     
-    if (window.location.hash.includes('type=recovery')) {
+    if (window.location.hash.includes('type=recovery') || window.location.pathname.includes('resetpassword')) {
       setIsRecovering(true);
     }
 
@@ -106,7 +112,10 @@ export default function App() {
 
   if (isRecovering) {
     return (
-      <ResetPasswordModal onComplete={() => { setIsRecovering(false); window.location.hash = ""; }} />
+      <ResetPasswordModal onComplete={() => { 
+        setIsRecovering(false); 
+        window.location.href = '/'; 
+      }} />
     );
   }
 

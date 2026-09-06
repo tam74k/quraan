@@ -10,7 +10,11 @@ export const ParentNotificationsModal: React.FC<ParentNotificationsModalProps> =
   const { currentUser, students, notes, tracking, markNotesAsRead } = useApp();
 
   const myKidIds = currentUser?.role === 'parent'
-    ? students.filter(s => s.parentEmail.toLowerCase() === currentUser.email.toLowerCase()).map(s => s.id)
+    ? students.filter(s => 
+        (currentUser.email && s.parentEmail && s.parentEmail.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.phone && s.parentPhone && s.parentPhone === currentUser.phone) ||
+        (s.parentId === currentUser.id)
+      ).map(s => s.id)
     : students.map(s => s.id);
 
   const parentNotes = notes

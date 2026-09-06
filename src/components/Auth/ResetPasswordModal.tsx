@@ -99,6 +99,12 @@ export const ResetPasswordModal: React.FC<{ onComplete: () => void }> = ({ onCom
             </button>
           </form>
         )}
+
+        <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+          <p className="text-[11px] text-slate-400">
+            مسار الصفحة المخصص لإعدادات سوبابيس: <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-emerald-600">/resetpassword</code>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -69,6 +69,7 @@ export interface Student {
   parentPhone: string;
   parentEmail?: string;
   sheikhId: number | null;
+  halqaType?: string;
   status: 'Active' | 'Inactive';
   joinDate: string;
   notes?: string;
@@ -87,16 +88,19 @@ export interface TrackingRecord {
   newSurah: string;
   newFrom: number | null;
   newTo: number | null;
-  // المراجعة الصغرى (القريبة)
+  // مقرر المراجعة (من السورة - من آية - إلى آية - إلى السورة - من آية - إلى آية)
   revSurah: string;
   revFrom: number | null;
   revTo: number | null;
+  revToSurah?: string;
+  revToFrom?: number | null;
+  revToTo?: number | null;
   // المراجعة الكبرى (الماضي)
   bigRevSurah?: string;
   bigRevFrom?: number | null;
   bigRevTo?: number | null;
   // الحضور والتقييم
-  att: 'حضوري' | 'اونلاين' | 'غائب' | 'مستأذن' | '';
+  att?: 'حضوري' | 'اونلاين' | 'غائب' | 'مستأذن' | '';
   eval: 'ممتاز' | 'جيد جدا' | 'جيد' | 'مقبول' | 'ضعيف' | 'لم يحفظ' | '';
   tajweedEval?: 'متقن' | 'جيد' | 'يحتاج مراجعة أحكام' | '';
   notes?: string;
@@ -146,3 +150,15 @@ export interface Badge {
   studentId: number;
   dateEarned: string;
 }
+
+export interface ArchiveRecord {
+  id: string;
+  date: string;
+  time: string;
+  archivedBy: string;
+  students: Student[];
+  tracking: TrackingRecord[];
+  centerInfo: CenterInfo;
+  sheikhs: Sheikh[];
+}
+

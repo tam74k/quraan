@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Cairo', system-ui, -apple-system, sans-serif;
 }
@@ -22,6 +24,10 @@
 
 /* Print Specific Rules */
 @media print {
+  @page {
+    size: A4 auto;
+    margin: 8mm;
+  }
   .no-print {
     display: none !important;
   }
@@ -29,107 +35,19 @@
     background: #ffffff !important;
     color: #000000 !important;
     background-image: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    zoom: 95%;
   }
   * {
     box-shadow: none !important;
   }
-
-  /* صفحة A4 بالعرض - هوامش ضيقة */
-  @page {
-    size: A4 landscape;
-    margin: 5mm;
-  }
-
-  /* فاصل صفحة بعد كل استمارة */
-  .page-break {
-    page-break-after: always !important;
-    break-after: page !important;
-  }
-  .page-break:last-child {
-    page-break-after: avoid !important;
-    break-after: avoid !important;
-  }
-
-  /* الاستمارة الفارغة: صفحة كاملة ثابتة الارتفاع */
-  .blank-form-page {
-    width: 100% !important;
-    /* A4 landscape 210mm - 10mm margins = 200mm */
-    height: 200mm !important;
-    max-height: 200mm !important;
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 2mm !important;
-    border: none !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  /* رأس الاستمارة */
-  .blank-form-header {
-    flex-shrink: 0 !important;
-    padding-bottom: 1.5mm !important;
-    margin-bottom: 1.5mm !important;
-  }
-
-  /* شريط بيانات الطالب */
-  .blank-form-info {
-    flex-shrink: 0 !important;
-    margin-bottom: 1.5mm !important;
-    padding: 1mm 2mm !important;
-  }
-
-  /* حاوية الجدول تأخذ المساحة المتبقية */
-  .blank-form-table-wrap {
-    flex: 1 !important;
-    overflow: hidden !important;
-    min-height: 0 !important;
-  }
-
-  /* الجدول يملأ الحاوية */
-  .blank-form-table {
-    height: 100% !important;
-    width: 100% !important;
-    border-collapse: collapse !important;
-    font-size: 7.5pt !important;
-  }
-
-  /* رأس الجدول - حجم ثابت */
-  .blank-form-table thead {
-    display: table-header-group !important;
-  }
-  .blank-form-table thead tr:first-child {
-    height: 9pt !important;
-  }
-  .blank-form-table thead tr:last-child {
-    height: 8pt !important;
-  }
-
-  /* جسم الجدول يوزع الصفوف */
-  .blank-form-table tbody {
-    display: table-row-group !important;
-  }
-
-  /* صفوف البيانات: 20 صف تملأ المساحة المتبقية */
-  .blank-form-row {
-    height: 7.5mm !important;
-  }
-
-  /* تذييل التوقيعات */
-  .blank-form-footer {
-    flex-shrink: 0 !important;
-    margin-top: 1.5mm !important;
-    padding-top: 1.5mm !important;
-    font-size: 7.5pt !important;
-  }
-
-  /* الاستمارات الشهرية */
   .monthly-sheet-landscape {
     width: 100% !important;
-    padding: 4mm !important;
-    border: none !important;
-    border-radius: 0 !important;
+    max-width: none !important;
     margin: 0 !important;
+    padding: 8px !important;
+    page-break-after: always;
+    break-after: page;
   }
 }

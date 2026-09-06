@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Building, Upload, Download, RotateCcw, Save, CheckCircle2, ShieldAlert, Sparkles } from 'lucide-react';
+import { Building, Upload, Download, RotateCcw, Save, CheckCircle2, ShieldAlert, Sparkles, FolderArchive } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export const CenterSettings: React.FC = () => {
   const {
+    currentUser,
     centerInfo,
     updateCenterInfo,
     exportDataJSON,
     importDataJSON,
-    resetToDemoData
+    archiveAndResetCurrentData,
+    halqaTypes,
+    addHalqaType,
+    updateHalqaType,
+    deleteHalqaType
   } = useApp();
 
   const [formData, setFormData] = useState({ ...centerInfo });
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+
   const [isUploading, setIsUploading] = useState(false);
+  const [newHalqaTypeName, setNewHalqaTypeName] = useState('');
+  const [editingOld, setEditingOld] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -38,7 +51,8 @@ export const CenterSettings: React.FC = () => {
           setFormData(prev => ({ ...prev, logo: publicUrlData.publicUrl }));
         }
       } catch (error: any) {
-        alert('فشل رفع الشعار: ' + error.message);
+        setErrorMsg('فشل رفع الشعار: ' + error.message);
+        setTimeout(() => setErrorMsg(''), 5000);
       } finally {
         setIsUploading(false);
       }
@@ -69,10 +83,58 @@ export const CenterSettings: React.FC = () => {
     }
   };
 
-  const handleReset = () => {
-    if (window.confirm('تحذير: هل أنت متأكد من إعادة ضبط البيانات إلى الوضع التجريبي الافتراضي؟ ستفقد أي سجلات تم إدخالها محلياً.')) {
-      resetToDemoData();
-      window.location.reload();
+  const handleInitiateArchive = () => {
+    if (!currentUser || currentUser.role !== 'admin') {
+      setErrorMsg('عذراً، هذه العملية الخطيرة مخصصة لمدير النظام (Admin) فقط.');
+      setTimeout(() => setErrorMsg(''), 5000);
+      return;
+    }
+    setShowPasswordModal(true);
+    setAdminPassword('');
+    setPasswordError('');
+  };
+
+  const handleConfirmArchive = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminPassword) {
+      setPasswordError('يرجى إدخال كلمة المرور');
+      return;
+    }
+
+    setIsVerifying(true);
+    setPasswordError('');
+
+    try {
+      if (currentUser?.id?.startsWith('demo-')) {
+        await archiveAndResetCurrentData();
+        setSuccessMsg('تم أرشفة البيانات الحالية بنجاح وتفريغ البرنامج لبدء دورة جديدة!');
+        setShowPasswordModal(false);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        return;
+      }
+
+      const { error: authErr } = await supabase.auth.signInWithPassword({
+        email: currentUser.email,
+        password: adminPassword
+      });
+
+      if (authErr) {
+        setPasswordError('كلمة المرور غير صحيحة.');
+        setIsVerifying(false);
+        return;
+      }
+
+      await archiveAndResetCurrentData();
+      setSuccessMsg('تم أرشفة البيانات الحالية بنجاح وتفريغ البرنامج لبدء دورة جديدة!');
+      setShowPasswordModal(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err: any) {
+      setPasswordError('حدث خطأ أثناء التحقق: ' + (err.message || ''));
+      setIsVerifying(false);
     }
   };
 
@@ -227,6 +289,102 @@ export const CenterSettings: React.FC = () => {
         </form>
       </div>
 
+      {/* Halqa Types Management */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-xs mb-6">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">إدارة أنواع الحلقات (القائمة المنسدلة للطلاب)</h3>
+        <p className="text-xs text-slate-400 mb-6">يمكنك إضافة أو تعديل أو حذف أنواع الحلقات التي تظهر عند تسجيل وتعديل بيانات الطلاب.</p>
+        
+        <div className="flex gap-2 mb-6">
+          <input
+            type="text"
+            value={newHalqaTypeName}
+            onChange={(e) => setNewHalqaTypeName(e.target.value)}
+            placeholder="اسم نوع الحلقة الجديدة (مثل: حلقة تلاوة وتدبر)..."
+            className="flex-1 px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (newHalqaTypeName.trim()) {
+                addHalqaType(newHalqaTypeName);
+                setNewHalqaTypeName('');
+                setSuccessMsg('تم إضافة نوع الحلقة بنجاح');
+                setTimeout(() => setSuccessMsg(''), 3000);
+              }
+            }}
+            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
+          >
+            إضافة نوع جديد
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {halqaTypes.map((ht) => (
+            <div key={ht} className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-2">
+              {editingOld === ht ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="w-full px-2 py-1 text-xs bg-white dark:bg-slate-850 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (editingName.trim()) {
+                        updateHalqaType(ht, editingName);
+                        setEditingOld(null);
+                        setSuccessMsg('تم تحديث نوع الحلقة بنجاح');
+                        setTimeout(() => setSuccessMsg(''), 3000);
+                      }
+                    }}
+                    className="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-lg"
+                  >
+                    حفظ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingOld(null)}
+                    className="px-2.5 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{ht}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => { setEditingOld(ht); setEditingName(ht); }}
+                      className="p-1.5 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                      title="تعديل"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`هل أنت متأكد من حذف النوع (${ht})؟`)) {
+                          deleteHalqaType(ht);
+                          setSuccessMsg('تم حذف نوع الحلقة بنجاح');
+                          setTimeout(() => setSuccessMsg(''), 3000);
+                        }
+                      }}
+                      className="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                      title="حذف"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Backup & Restore Tools */}
       <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-xs">
         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">إدارة النسخ الاحتياطي واستعادة البيانات</h3>
@@ -265,21 +423,75 @@ export const CenterSettings: React.FC = () => {
 
           <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 flex flex-col justify-between">
             <div>
-              <h4 className="font-bold text-xs text-rose-900 dark:text-rose-200 mb-1">إعادة الضبط للوضع التجريبي</h4>
-              <p className="text-[11px] text-rose-700/70 dark:text-rose-300/70">مسح التعديلات واسترجاع البيانات النموذجية الافتراضية.</p>
+              <h4 className="font-bold text-xs text-rose-900 dark:text-rose-200 mb-1">نقل البيانات الحالية الى الارشيف وتفريغ البرنامج</h4>
+              <p className="text-[11px] text-rose-700/70 dark:text-rose-300/70">يتم تحويل جميع بيانات الطلاب والمتابعات بالكامل الى الارشيف وتصبح قائمة الطلاب فارغة تماما لبدء دورة جديدة.</p>
             </div>
             <button
               type="button"
-              onClick={handleReset}
+              onClick={handleInitiateArchive}
               className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>إعادة ضبط البيانات</span>
+              <FolderArchive className="w-3.5 h-3.5" />
+              <span>أرشفة وتفريغ البرنامج</span>
             </button>
           </div>
 
         </div>
       </div>
+
+      {/* Admin Password Confirmation Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4 text-rose-600">
+              <ShieldAlert className="w-8 h-8 shrink-0" />
+              <div>
+                <h3 className="text-base font-black text-slate-800 dark:text-slate-100">تأكيد عملية خطيرة: أرشفة وتفريغ البرنامج</h3>
+                <p className="text-xs text-rose-600 dark:text-rose-400">سيتم نقل جميع الطلاب والمتابعات للأرشيف وتفريغ البرنامج بالكامل.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleConfirmArchive} className="space-y-4">
+              {passwordError && (
+                <div className="p-3 text-xs bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl">
+                  {passwordError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  أدخل كلمة مرور مدير النظام ({currentUser?.name || currentUser?.email}):
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="كلمة المرور..."
+                  className="w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={isVerifying}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  {isVerifying ? 'جاري التحقق...' : 'تأكيد الأرشفة والتفريغ'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

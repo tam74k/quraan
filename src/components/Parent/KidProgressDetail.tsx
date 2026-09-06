@@ -1,15 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Student } from '../../types';
 import { QuranMushafVisualizer } from '../Common/QuranMushafVisualizer';
-import { BookOpen, Calendar, CheckCircle2, MessageSquare, Award, Sparkles, Trophy } from 'lucide-react';
+import { BookOpen, Calendar, CheckCircle2, MessageSquare, Award, Sparkles, Trophy, Edit3, AlertTriangle, X, Save, Phone, ShieldCheck } from 'lucide-react';
 
 interface KidProgressDetailProps {
   kid: Student;
 }
 
 export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => {
-  const { tracking, sheikhs, notes, badges } = useApp();
+  const { tracking, sheikhs, notes, badges, currentUser, updateStudent } = useApp();
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editCivilId, setEditCivilId] = useState(kid.civilId || '');
+  const [editDob, setEditDob] = useState(kid.dob || '');
+  const [editParentPhone, setEditParentPhone] = useState(kid.parentPhone || currentUser?.phone || '');
+  const [editError, setEditError] = useState('');
+  const [editSuccess, setEditSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleOpenEdit = () => {
+    if (!currentUser?.phone) {
+      setEditError('عذراً، يجب عليك أولاً إدخال وتحديث رقم جوالك في إعدادات حسابك الشخصي قبل تمكينك من تعديل بيانات الأبناء.');
+    } else {
+      setEditError('');
+    }
+    setEditCivilId(kid.civilId || '');
+    setEditDob(kid.dob || '');
+    setEditParentPhone(kid.parentPhone || currentUser?.phone || '');
+    setEditSuccess(false);
+    setShowEditModal(true);
+  };
+
+  const handleSaveKidData = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser?.phone) {
+      setEditError('يجب عليك تحديث رقم جوالك في إعدادات الحساب الشخصي أولاً.');
+      return;
+    }
+
+    setIsSaving(true);
+    setEditError('');
+
+    try {
+      await updateStudent(kid.id, {
+        civilId: editCivilId,
+        dob: editDob,
+        parentPhone: editParentPhone
+      });
+      setEditSuccess(true);
+      setTimeout(() => {
+        setShowEditModal(false);
+        setEditSuccess(false);
+      }, 1500);
+    } catch (err: any) {
+      setEditError(err.message || 'حدث خطأ أثناء حفظ البيانات');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const sheikh = sheikhs.find(s => s.id === kid.sheikhId);
   const approvedTracking = tracking
@@ -47,25 +96,42 @@ export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => 
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 المحفظ: فضيلة الشيخ / <strong className="text-emerald-700 dark:text-emerald-400">{sheikh?.name || 'غير محدد'}</strong> ({sheikh?.halqaName || 'عامة'})
               </p>
+              <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                <span>الرقم المدني: {kid.civilId || '—'}</span>
+                <span>•</span>
+                <span>تاريخ الميلاد: {kid.dob || '—'}</span>
+                <span>•</span>
+                <span>جوال ولي الأمر: {kid.parentPhone || '—'}</span>
+              </div>
             </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="flex items-center gap-3 sm:gap-6 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="text-center">
-              <span className="block text-xl font-black text-emerald-700 dark:text-emerald-400">{kid.currentJuz || 1}</span>
-              <span className="text-[11px] text-slate-400">الأجزاء المحفوظة</span>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Quick Metrics */}
+            <div className="flex items-center gap-3 sm:gap-6 bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div className="text-center">
+                <span className="block text-xl font-black text-emerald-700 dark:text-emerald-400">{kid.currentJuz || 1}</span>
+                <span className="text-[11px] text-slate-400">الأجزاء المحفوظة</span>
+              </div>
+              <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+              <div className="text-center">
+                <span className="block text-xl font-black text-amber-600 dark:text-amber-400">{kid.points || 0}</span>
+                <span className="text-[11px] text-slate-400">نقاط التميز</span>
+              </div>
+              <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+              <div className="text-center">
+                <span className="block text-xl font-black text-purple-600 dark:text-purple-400">{totalRecitals}</span>
+                <span className="text-[11px] text-slate-400">أيام التسميع</span>
+              </div>
             </div>
-            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-            <div className="text-center">
-              <span className="block text-xl font-black text-amber-600 dark:text-amber-400">{kid.points || 0}</span>
-              <span className="text-[11px] text-slate-400">نقاط التميز</span>
-            </div>
-            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-            <div className="text-center">
-              <span className="block text-xl font-black text-purple-600 dark:text-purple-400">{totalRecitals}</span>
-              <span className="text-[11px] text-slate-400">أيام التسميع</span>
-            </div>
+
+            <button
+              onClick={handleOpenEdit}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>تعديل بيانات الطالب</span>
+            </button>
           </div>
         </div>
       </div>
@@ -185,6 +251,124 @@ export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => 
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Student Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                  <Edit3 className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-slate-100">تعديل بيانات الطالب</h3>
+                  <p className="text-xs text-slate-400">تحديث الرقم المدني، تاريخ الميلاد، ورقم جوال ولي الأمر</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {editError && (
+              <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            {editSuccess && (
+              <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>تم حفظ وتحديث بيانات الطالب بنجاح في قاعدة البيانات!</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveKidData} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  اسم الطالب (غير مسموح بتعديله):
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={kid.name}
+                  className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 text-xs cursor-not-allowed font-bold"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">اسم الطالب مسجل رسمياً لدى المركز ولا يمكن تعديله من قبل ولي الأمر.</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    الرقم المدني:
+                  </label>
+                  <input
+                    type="text"
+                    value={editCivilId}
+                    onChange={(e) => setEditCivilId(e.target.value)}
+                    placeholder="مثال: 10xxxxxxxx"
+                    dir="ltr"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono text-right"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    تاريخ الميلاد:
+                  </label>
+                  <input
+                    type="date"
+                    value={editDob}
+                    onChange={(e) => setEditDob(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  رقم جوال ولي الأمر:
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    value={editParentPhone}
+                    onChange={(e) => setEditParentPhone(e.target.value)}
+                    placeholder="05XXXXXXXX"
+                    dir="ltr"
+                    className="w-full px-4 py-2.5 pl-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono text-right"
+                  />
+                  <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">يجب أن يتطابق مع رقم جوال ولي الأمر المسجل في إعدادات الحساب الشخصي.</p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving || !currentUser?.phone}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSaving ? 'جاري الحفظ...' : 'حفظ التعديلات'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
