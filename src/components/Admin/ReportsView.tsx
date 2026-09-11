@@ -5,7 +5,7 @@ import { FileText, Printer, Calendar, User, Users } from 'lucide-react';
 const ARABIC_DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
 export const ReportsView: React.FC = () => {
-  const { centerInfo, students, sheikhs, tracking } = useApp();
+  const { centerInfo, students, sheikhs, tracking, nationalities } = useApp();
 
   const now = new Date();
   const year = now.getFullYear();
@@ -17,6 +17,7 @@ export const ReportsView: React.FC = () => {
   const [reportType, setReportType] = useState<'halqa_monthly_batch' | 'single_student_monthly' | 'sheikh_daily' | 'sheikh_students' | 'all_students' | 'blank_tracking_form'>('halqa_monthly_batch');
   const [selectedSheikhId, setSelectedSheikhId] = useState<number>(sheikhs[0]?.id || 1);
   const [selectedStudentId, setSelectedStudentId] = useState<number>(students[0]?.id || 1);
+  const [selectedNationality, setSelectedNationality] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<string>(firstDayOfMonth);
   const [dateTo, setDateTo] = useState<string>(lastDayOfMonth);
 
@@ -45,7 +46,20 @@ export const ReportsView: React.FC = () => {
   };
   const activeSheikh = sheikhs.find(s => s.id === selectedSheikhId) || sheikhs[0];
   const halqaStudents = students.filter(s => s.sheikhId === activeSheikh?.id && (isStudentActive(s) || getStudentDateList(s).length > 0));
+  const filteredHalqaStudents = halqaStudents.filter(s => selectedNationality === 'all' || (s.nationality || 'كويتي') === selectedNationality);
+  const allCenterStudents = students.filter(s => isStudentActive(s) || getStudentDateList(s).length > 0);
+  const filteredAllCenterStudents = allCenterStudents.filter(s => selectedNationality === 'all' || (s.nationality || 'كويتي') === selectedNationality);
   const selectedStudent = students.find(s => s.id === selectedStudentId);
+
+  // Helper function to calculate nationality stats
+  const getNationalityStats = (list: typeof students) => {
+    const counts: { [key: string]: number } = {};
+    list.forEach(s => {
+      const nat = s.nationality || 'كويتي';
+      counts[nat] = (counts[nat] || 0) + 1;
+    });
+    return counts;
+  };
     
 
   
@@ -479,7 +493,7 @@ export const ReportsView: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/60">
+        <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-5 gap-3 pt-2 border-t border-slate-100 dark:border-slate-700/60">
           
           {(reportType === 'halqa_monthly_batch' || reportType === 'single_student_monthly' || reportType === 'sheikh_daily' || reportType === 'sheikh_students' || reportType === 'blank_tracking_form') && (
             <div>
@@ -506,6 +520,22 @@ export const ReportsView: React.FC = () => {
               >
                 {students.map(s => (
                   <option key={s.id} value={s.id}>{s.name} ({s.grade})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {(reportType === 'sheikh_students' || reportType === 'all_students') && (
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 mb-1">تصفية بالجنسية</label>
+              <select
+                value={selectedNationality}
+                onChange={(e) => setSelectedNationality(e.target.value)}
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              >
+                <option value="all">جميع الجنسيات</option>
+                {nationalities.map((nat, idx) => (
+                  <option key={idx} value={nat}>{nat}</option>
                 ))}
               </select>
             </div>
@@ -574,6 +604,9 @@ export const ReportsView: React.FC = () => {
               </div>
               <div className="text-left text-sm font-bold text-slate-600">
                 <div>كشف بأسماء طلاب حلقة: {activeSheikh?.halqaName || 'عامة'}</div>
+                {selectedNationality !== 'all' && (
+                  <div className="text-xs text-emerald-800 mt-1">تصفية بالجنسية: {selectedNationality}</div>
+                )}
                 <div className="text-[10px] mt-2 font-normal text-slate-400">تاريخ الطباعة: {new Date().toLocaleDateString('ar-KW')}</div>
               </div>
             </div>
@@ -582,6 +615,7 @@ export const ReportsView: React.FC = () => {
                 <tr>
                   <th className="p-2 border w-10">م</th>
                   <th className="p-2 border text-right">اسم الطالب</th>
+                  <th className="p-2 border w-24">الجنسية</th>
                   <th className="p-2 border w-28">الرقم المدني</th>
                   <th className="p-2 border w-16">العمر</th>
                   <th className="p-2 border w-24">المرحلة</th>
@@ -590,10 +624,11 @@ export const ReportsView: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {halqaStudents.map((st, i) => (
+                {filteredHalqaStudents.map((st, i) => (
                   <tr key={st.id}>
                     <td className="p-2 border">{i + 1}</td>
                     <td className="p-2 border text-right font-bold">{st.name}</td>
+                    <td className="p-2 border font-medium">{st.nationality || 'كويتي'}</td>
                     <td className="p-2 border font-mono">{st.civilId}</td>
                     <td className="p-2 border">{st.age}</td>
                     <td className="p-2 border">{st.grade}</td>
@@ -601,8 +636,37 @@ export const ReportsView: React.FC = () => {
                     <td className="p-2 border font-mono">{st.joinDate}</td>
                   </tr>
                 ))}
+                {filteredHalqaStudents.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="p-6 text-center text-slate-400">
+                      لا يوجد طلاب يطابقون خيارات التصفية
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
+
+            {/* Nationality Statistics Footer */}
+            {filteredHalqaStudents.length > 0 && (
+              <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-300">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-bold text-slate-800">
+                    📊 إحصائيات الجنسيات بالكشف:
+                  </div>
+                  <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                    إجمالي الطلاب: {filteredHalqaStudents.length} طالب
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {Object.entries(getNationalityStats(filteredHalqaStudents)).map(([nat, count]) => (
+                    <div key={nat} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1 font-semibold text-slate-700 flex items-center gap-1.5">
+                      <span>{nat}:</span>
+                      <span className="font-bold text-emerald-900 bg-emerald-100/70 px-1.5 py-0.5 rounded font-mono">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -620,6 +684,9 @@ export const ReportsView: React.FC = () => {
               </div>
               <div className="text-left text-sm font-bold text-slate-600">
                 <div>كشف بأسماء جميع طلاب المركز</div>
+                {selectedNationality !== 'all' && (
+                  <div className="text-xs text-emerald-800 mt-1">تصفية بالجنسية: {selectedNationality}</div>
+                )}
                 <div className="text-[10px] mt-2 font-normal text-slate-400">تاريخ الطباعة: {new Date().toLocaleDateString('ar-KW')}</div>
               </div>
             </div>
@@ -628,6 +695,7 @@ export const ReportsView: React.FC = () => {
                 <tr>
                   <th className="p-2 border w-10">م</th>
                   <th className="p-2 border text-right">اسم الطالب</th>
+                  <th className="p-2 border w-24">الجنسية</th>
                   <th className="p-2 border w-28">الرقم المدني</th>
                   <th className="p-2 border w-16">العمر</th>
                   <th className="p-2 border w-24">المرحلة</th>
@@ -637,10 +705,11 @@ export const ReportsView: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {students.filter(s => isStudentActive(s) || getStudentDateList(s).length > 0).map((st, i) => (
+                {filteredAllCenterStudents.map((st, i) => (
                   <tr key={st.id}>
                     <td className="p-2 border">{i + 1}</td>
                     <td className="p-2 border text-right font-bold">{st.name}</td>
+                    <td className="p-2 border font-medium">{st.nationality || 'كويتي'}</td>
                     <td className="p-2 border font-mono">{st.civilId}</td>
                     <td className="p-2 border">{st.age}</td>
                     <td className="p-2 border">{st.grade}</td>
@@ -649,8 +718,37 @@ export const ReportsView: React.FC = () => {
                     <td className="p-2 border">{sheikhs.find(s => s.id === st.sheikhId)?.halqaName || 'غير مسكن'}</td>
                   </tr>
                 ))}
+                {filteredAllCenterStudents.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="p-6 text-center text-slate-400">
+                      لا يوجد طلاب يطابقون خيارات التصفية
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
+
+            {/* Nationality Statistics Footer */}
+            {filteredAllCenterStudents.length > 0 && (
+              <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-300">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-bold text-slate-800">
+                    📊 إحصائيات الجنسيات بالكشف:
+                  </div>
+                  <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                    إجمالي الطلاب: {filteredAllCenterStudents.length} طالب
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {Object.entries(getNationalityStats(filteredAllCenterStudents)).map(([nat, count]) => (
+                    <div key={nat} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1 font-semibold text-slate-700 flex items-center gap-1.5">
+                      <span>{nat}:</span>
+                      <span className="font-bold text-emerald-900 bg-emerald-100/70 px-1.5 py-0.5 rounded font-mono">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

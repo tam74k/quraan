@@ -14,7 +14,11 @@ export const CenterSettings: React.FC = () => {
     halqaTypes,
     addHalqaType,
     updateHalqaType,
-    deleteHalqaType
+    deleteHalqaType,
+    nationalities,
+    addNationality,
+    updateNationality,
+    deleteNationality
   } = useApp();
 
   const [formData, setFormData] = useState({ ...centerInfo });
@@ -30,6 +34,10 @@ export const CenterSettings: React.FC = () => {
   const [newHalqaTypeName, setNewHalqaTypeName] = useState('');
   const [editingOld, setEditingOld] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
+
+  const [newNationalityName, setNewNationalityName] = useState('');
+  const [editingOldNationality, setEditingOldNationality] = useState<string | null>(null);
+  const [editingNationalityName, setEditingNationalityName] = useState('');
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -373,6 +381,119 @@ export const CenterSettings: React.FC = () => {
                         }
                       }}
                       className="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                      title="حذف"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Nationalities Management */}
+      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-xs">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-base">🌍</span>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">إدارة قائمة الجنسيات</h3>
+        </div>
+        <p className="text-xs text-slate-400 mb-4">
+          إضافة وتعديل وحذف الجنسيات المتاحة في تسجيل بيانات الطلاب، والتصفية في التقارير الإحصائية.
+        </p>
+
+        {/* Add nationality form */}
+        <div className="flex items-center gap-2 max-w-md mb-6">
+          <input
+            type="text"
+            placeholder="اسم الجنسية الجديدة (مثال: قطري، تركي...)"
+            value={newNationalityName}
+            onChange={(e) => setNewNationalityName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (newNationalityName.trim()) {
+                  addNationality(newNationalityName);
+                  setNewNationalityName('');
+                  setSuccessMsg('تمت إضافة الجنسية بنجاح');
+                  setTimeout(() => setSuccessMsg(''), 3000);
+                }
+              }
+            }}
+            className="flex-1 px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (newNationalityName.trim()) {
+                addNationality(newNationalityName);
+                setNewNationalityName('');
+                setSuccessMsg('تمت إضافة الجنسية بنجاح');
+                setTimeout(() => setSuccessMsg(''), 3000);
+              }
+            }}
+            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
+          >
+            إضافة جنسية
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+          {nationalities.map((nat) => (
+            <div key={nat} className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-1.5">
+              {editingOldNationality === nat ? (
+                <div className="flex items-center gap-1.5 flex-1">
+                  <input
+                    type="text"
+                    value={editingNationalityName}
+                    onChange={(e) => setEditingNationalityName(e.target.value)}
+                    className="w-full px-2 py-1 text-xs bg-white dark:bg-slate-850 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (editingNationalityName.trim()) {
+                        updateNationality(nat, editingNationalityName);
+                        setEditingOldNationality(null);
+                        setSuccessMsg('تم تحديث الجنسية بنجاح');
+                        setTimeout(() => setSuccessMsg(''), 3000);
+                      }
+                    }}
+                    className="px-2 py-1 bg-emerald-600 text-white text-[10px] font-bold rounded-lg"
+                  >
+                    حفظ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingOldNationality(null)}
+                    className="px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{nat}</span>
+                  <div className="flex items-center gap-0.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => { setEditingOldNationality(nat); setEditingNationalityName(nat); }}
+                      className="p-1 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-xs"
+                      title="تعديل"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`هل أنت متأكد من حذف جنسية (${nat})؟`)) {
+                          deleteNationality(nat);
+                          setSuccessMsg('تم حذف الجنسية بنجاح');
+                          setTimeout(() => setSuccessMsg(''), 3000);
+                        }
+                      }}
+                      className="p-1 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-xs"
                       title="حذف"
                     >
                       🗑️

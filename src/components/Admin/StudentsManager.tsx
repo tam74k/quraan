@@ -29,13 +29,15 @@ export const StudentsManager: React.FC = () => {
     updateStudent,
     deleteStudent,
     extractDOBFromCivilID,
-    halqaTypes
+    halqaTypes,
+    nationalities
   } = useApp();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('all');
+  const [nationalityFilter, setNationalityFilter] = useState('all');
   const [sheikhFilter, setSheikhFilter] = useState('all');
   const [halqaTypeFilter, setHalqaTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -55,6 +57,7 @@ export const StudentsManager: React.FC = () => {
     dob: '',
     age: 10,
     grade: 'المتوسط' as Student['grade'],
+    nationality: 'كويتي',
     parentName: '',
     parentPhone: '',
 
@@ -74,6 +77,7 @@ export const StudentsManager: React.FC = () => {
       dob: '',
       age: 10,
       grade: 'المتوسط',
+      nationality: nationalities[0] || 'كويتي',
 
       parentName: '',
       parentPhone: '',
@@ -97,6 +101,7 @@ export const StudentsManager: React.FC = () => {
       dob: student.dob || '',
       age: student.age,
       grade: student.grade,
+      nationality: student.nationality || nationalities[0] || 'كويتي',
       parentName: student.parentName || '',
       parentPhone: student.parentPhone,
       sheikhId: student.sheikhId || '',
@@ -143,6 +148,7 @@ export const StudentsManager: React.FC = () => {
       dob: formData.dob,
       age: Number(formData.age),
       grade: formData.grade,
+      nationality: formData.nationality,
       parentName: formData.parentName,
       parentPhone: formData.parentPhone,
       sheikhId: formData.sheikhId ? Number(formData.sheikhId) : null,
@@ -170,10 +176,10 @@ export const StudentsManager: React.FC = () => {
   };
 
   const exportCSV = () => {
-    const headers = 'الرقم المدني,اسم الطالب,المرحلة,العمر,هاتف ولي الأمر,البريد,الحلقة,الحالة\n';
+    const headers = 'الرقم المدني,اسم الطالب,الجنسية,المرحلة,العمر,هاتف ولي الأمر,الحلقة,الحالة\n';
     const rows = filteredStudents.map(s => {
       const sh = sheikhs.find(shk => shk.id === s.sheikhId);
-      return `"${s.civilId}","${s.name}","${s.grade}","${s.age}","${s.parentPhone}","${sh ? sh.name : 'غير محدد'}","${s.status}"`;
+      return `"${s.civilId}","${s.name}","${s.nationality || 'كويتي'}","${s.grade}","${s.age}","${s.parentPhone}","${sh ? sh.name : 'غير محدد'}","${s.status}"`;
     }).join('\n');
 
     const blob = new Blob(['\uFEFF' + headers + rows], { type: 'text/csv;charset=utf-8;' });
@@ -189,6 +195,7 @@ export const StudentsManager: React.FC = () => {
       {
         "الاسم الكامل": "محمد عبدالله أحمد",
         "الرقم المدني": "31005123456",
+        "الجنسية": "كويتي",
         "المرحلة الدراسية": "المتوسط",
         "العمر": 13,
         "اسم ولي الأمر": "عبدالله أحمد",
@@ -200,6 +207,7 @@ export const StudentsManager: React.FC = () => {
       {
         "الاسم الكامل": "إبراهيم خالد عمر",
         "الرقم المدني": "31206111222",
+        "الجنسية": "مصري",
         "المرحلة الدراسية": "الابتدائي",
         "العمر": 10,
         "اسم ولي الأمر": "خالد عمر",
@@ -244,6 +252,7 @@ export const StudentsManager: React.FC = () => {
         json.forEach((row: any) => {
           const name = row["الاسم الكامل"] || row["اسم الطالب"] || row["Name"] || '';
           const civilId = String(row["الرقم المدني"] || row["Civil ID"] || '');
+          const nationality = row["الجنسية"] || row["Nationality"] || 'كويتي';
           const grade = row["المرحلة الدراسية"] || row["المرحلة"] || 'المتوسط';
           const age = Number(row["العمر"] || 10);
           const parentName = row["اسم ولي الأمر"] || '';
@@ -259,6 +268,7 @@ export const StudentsManager: React.FC = () => {
               dob: '',
               age: isNaN(age) ? 10 : age,
               grade: grade as any,
+              nationality: nationality.trim(),
               parentName: parentName.trim(),
               parentPhone: parentPhone.trim(),
               sheikhId: sheikhs[0]?.id || null,
@@ -287,10 +297,11 @@ export const StudentsManager: React.FC = () => {
   const filteredStudents = students.filter(s => {
     const matchesSearch = s.name.includes(searchQuery) || s.civilId.includes(searchQuery) || s.parentPhone.includes(searchQuery);
     const matchesGrade = gradeFilter === 'all' || s.grade === gradeFilter;
+    const matchesNationality = nationalityFilter === 'all' || (s.nationality || 'كويتي') === nationalityFilter;
     const matchesSheikh = sheikhFilter === 'all' || (sheikhFilter === 'none' ? s.sheikhId === null : s.sheikhId === Number(sheikhFilter));
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
     const matchesHalqaType = halqaTypeFilter === 'all' || s.halqaType === halqaTypeFilter;
-    return matchesSearch && matchesGrade && matchesSheikh && matchesStatus && matchesHalqaType;
+    return matchesSearch && matchesGrade && matchesNationality && matchesSheikh && matchesStatus && matchesHalqaType;
   });
 
   return (
@@ -357,7 +368,7 @@ export const StudentsManager: React.FC = () => {
       </div>
 
       {/* Filters & Search Controls */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
 
         {/* Halqa Type Filter */}
         <div>
@@ -401,6 +412,20 @@ export const StudentsManager: React.FC = () => {
           </select>
         </div>
 
+        {/* Nationality Filter */}
+        <div>
+          <select
+            value={nationalityFilter}
+            onChange={(e) => setNationalityFilter(e.target.value)}
+            className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          >
+            <option value="all">جميع الجنسيات</option>
+            {nationalities.map((nat, idx) => (
+              <option key={idx} value={nat}>{nat}</option>
+            ))}
+          </select>
+        </div>
+
         {/* Sheikh */}
         <div>
           <select
@@ -438,6 +463,7 @@ export const StudentsManager: React.FC = () => {
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold">
                 <th className="p-4">اسم الطالب</th>
+                <th className="p-4">الجنسية</th>
                 <th className="p-4">الرقم المدني</th>
                 <th className="p-4">المرحلة / العمر</th>
                 <th className="p-4">الحلقة المسكن بها</th>
@@ -455,6 +481,11 @@ export const StudentsManager: React.FC = () => {
                       <td className="p-4">
                         <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">{student.name}</div>
                         <div className="text-[11px] text-slate-400">تاريخ الانضمام: {student.joinDate}</div>
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300">
+                          {student.nationality || 'كويتي'}
+                        </span>
                       </td>
                       <td className="p-4 font-mono font-medium">{student.civilId}</td>
                       <td className="p-4">
@@ -530,7 +561,7 @@ export const StudentsManager: React.FC = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="p-12 text-center text-slate-400">
+                  <td colSpan={8} className="p-12 text-center text-slate-400">
                     لا يوجد طلاب يطابقون خيارات البحث المحددة
                   </td>
                 </tr>
@@ -596,6 +627,20 @@ export const StudentsManager: React.FC = () => {
                     placeholder="عبدالرحمن محمد الراشد"
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   />
+                </div>
+
+                {/* Nationality */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الجنسية</label>
+                  <select
+                    value={formData.nationality}
+                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  >
+                    {nationalities.map((nat, idx) => (
+                      <option key={idx} value={nat}>{nat}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* DOB & Age */}

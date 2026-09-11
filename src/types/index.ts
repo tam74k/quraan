@@ -65,6 +65,7 @@ export interface Student {
   dob?: string;
   age: number;
   grade: 'التمهيدي' | 'الابتدائي' | 'المتوسط' | 'الثانوي' | 'الجامعي' | 'عام';
+  nationality?: string;
   parentName?: string;
   parentPhone: string;
   parentEmail?: string;
@@ -79,6 +80,13 @@ export interface Student {
   points?: number;
   avatar?: string;
 }
+
+export interface Nationality {
+  id: number;
+  name: string;
+  sortOrder: number;
+}
+
 
 export interface TrackingRecord {
   id: number;

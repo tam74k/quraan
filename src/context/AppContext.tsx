@@ -30,6 +30,10 @@ interface AppContextType {
   addHalqaType: (name: string) => void;
   updateHalqaType: (oldName: string, newName: string) => void;
   deleteHalqaType: (name: string) => void;
+  nationalities: string[];
+  addNationality: (name: string) => void;
+  updateNationality: (oldName: string, newName: string) => void;
+  deleteNationality: (name: string) => void;
   isDarkMode: boolean;
   activeScreen: string;
   setActiveScreen: (screen: string) => void;
@@ -87,6 +91,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     "حلقة تلقين",
     "حلقة تلقين متقدم",
     "حلقة تأسيس"
+  ]);
+  const [nationalities, setNationalities] = useState<string[]>([
+    "كويتي",
+    "مصري",
+    "سوري",
+    "سعودي",
+    "إماراتي",
+    "قطري",
+    "بحريني",
+    "عُماني",
+    "أردني",
+    "فلسطيني",
+    "لبناني",
+    "عراقي",
+    "يمني",
+    "سوداني",
+    "مغربي",
+    "جزائري",
+    "تونسي",
+    "ليبي",
+    "موريتاني",
+    "صومالي",
+    "جيبوتي",
+    "قمري"
   ]);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
@@ -207,7 +235,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (sheikhsData) setSheikhs(sheikhsData.map((s: any) => ({ id: s.id, userId: s.user_id, name: s.name, civilId: s.civil_id, phone: s.phone, email: s.email, halqaName: s.halqa_name, bio: s.bio, active: s.active })));
       if (adminsData) setAdmins(adminsData.map((a: any) => ({ id: a.id, userId: a.user_id, name: a.name, civilId: a.civil_id, phone: a.phone, email: a.email, jobTitle: a.job_title })));
-      if (studentsData) setStudents(studentsData.map((s: any) => ({ id: s.id, name: s.name, civilId: s.civil_id, dob: s.dob, age: s.age, grade: s.grade, parentName: s.parent_name, parentPhone: s.parent_phone, parentEmail: s.parent_email, sheikhId: s.sheikh_id, status: s.status, joinDate: s.join_date, currentJuz: s.current_juz, targetJuz: s.target_juz, points: s.points, notes: s.notes, halqaType: s.halqa_type || '' })));
+      if (studentsData) setStudents(studentsData.map((s: any) => ({ id: s.id, name: s.name, civilId: s.civil_id, dob: s.dob, age: s.age, grade: s.grade, nationality: s.nationality || 'كويتي', parentName: s.parent_name, parentPhone: s.parent_phone, parentEmail: s.parent_email, sheikhId: s.sheikh_id, status: s.status, joinDate: s.join_date, currentJuz: s.current_juz, targetJuz: s.target_juz, points: s.points, notes: s.notes, halqaType: s.halqa_type || '' })));
       if (trackingData) setTracking(trackingData.map((t: any) => ({ id: t.id, studentId: t.student_id, sheikhId: t.sheikh_id, date: t.date, newSurah: t.new_surah, newFrom: t.new_from, newTo: t.new_to, revSurah: t.rev_surah, revFrom: t.rev_from, revTo: t.rev_to, revToSurah: t.rev_to_surah, revToFrom: t.rev_to_from, revToTo: t.rev_to_to, bigRevSurah: t.big_rev_surah, bigRevFrom: t.big_rev_from, bigRevTo: t.big_rev_to, att: t.att, eval: t.eval, notes: t.notes, status: t.status, readByParent: t.read_by_parent })));
       if (notesData) setNotes(notesData.map((n: any) => ({ id: n.id, studentId: n.student_id, sheikhId: n.sheikh_id, date: n.date, text: n.text, priority: n.priority, readByParent: n.read_by_parent })));
       if (examsData) setExams(examsData.map((e: any) => ({ id: e.id, studentId: e.student_id, date: e.date, type: e.type, partOrSurah: e.part_or_surah, grade: e.grade, score: e.score, examiner: e.examiner, notes: e.notes })));
@@ -231,6 +259,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const { data: halqaTypesData } = await supabase.from("halqa_types").select("*");
           if (halqaTypesData && halqaTypesData.length > 0) {
             setHalqaTypes(halqaTypesData.map((h: any) => h.name));
+          }
+        } catch (err) {
+          // ignore
+        }
+      })();
+
+      // Fetch nationalities safely
+      (async () => {
+        try {
+          const { data: nationalitiesData } = await supabase.from("nationalities").select("*").order("sort_order", { ascending: true });
+          if (nationalitiesData && nationalitiesData.length > 0) {
+            setNationalities(nationalitiesData.map((n: any) => n.name));
           }
         } catch (err) {
           // ignore
@@ -320,10 +360,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addStudent = (studentData: Omit<Student, "id">): Student => {
     const tempId = Date.now();
-    const newStudent: Student = { ...studentData, id: tempId, joinDate: studentData.joinDate || new Date().toISOString().split("T")[0], status: studentData.status || "Active", points: studentData.points || 0 };
+    const newStudent: Student = { ...studentData, id: tempId, joinDate: studentData.joinDate || new Date().toISOString().split("T")[0], status: studentData.status || "Active", points: studentData.points || 0, nationality: studentData.nationality || 'كويتي' };
     setStudents(prev => [newStudent, ...prev]);
     supabase.from("students").insert({
-      name: newStudent.name, civil_id: newStudent.civilId, dob: newStudent.dob, age: newStudent.age, grade: newStudent.grade, parent_name: newStudent.parentName, parent_phone: newStudent.parentPhone, parent_email: newStudent.parentEmail, sheikh_id: newStudent.sheikhId, status: newStudent.status, join_date: newStudent.joinDate, current_juz: newStudent.currentJuz, target_juz: newStudent.targetJuz, points: newStudent.points, notes: newStudent.notes, halqa_type: newStudent.halqaType || ''
+      name: newStudent.name, civil_id: newStudent.civilId, dob: newStudent.dob, age: newStudent.age, grade: newStudent.grade, nationality: newStudent.nationality, parent_name: newStudent.parentName, parent_phone: newStudent.parentPhone, parent_email: newStudent.parentEmail, sheikh_id: newStudent.sheikhId, status: newStudent.status, join_date: newStudent.joinDate, current_juz: newStudent.currentJuz, target_juz: newStudent.targetJuz, points: newStudent.points, notes: newStudent.notes, halqa_type: newStudent.halqaType || ''
     }).select().single().then(({ data, error }) => {
       if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setStudents(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
@@ -339,6 +379,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (studentData.dob !== undefined) updatePayload.dob = studentData.dob;
     if (studentData.age !== undefined) updatePayload.age = studentData.age;
     if (studentData.grade !== undefined) updatePayload.grade = studentData.grade;
+    if (studentData.nationality !== undefined) updatePayload.nationality = studentData.nationality;
     if (studentData.parentName !== undefined) updatePayload.parent_name = studentData.parentName;
     if (studentData.parentPhone !== undefined) updatePayload.parent_phone = studentData.parentPhone;
     if (studentData.parentEmail !== undefined) updatePayload.parent_email = studentData.parentEmail;
@@ -648,6 +689,28 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
     if (error) console.error("Error deleting halqa type:", error);
   };
 
+  const addNationality = async (name: string) => {
+    if (!name.trim() || nationalities.includes(name.trim())) return;
+    const trimmed = name.trim();
+    setNationalities(prev => [...prev, trimmed]);
+    const { error } = await supabase.from('nationalities').insert({ name: trimmed });
+    if (error) console.error("Error adding nationality:", error);
+  };
+
+  const updateNationality = async (oldName: string, newName: string) => {
+    if (!newName.trim() || nationalities.includes(newName.trim())) return;
+    const trimmed = newName.trim();
+    setNationalities(prev => prev.map(t => t === oldName ? trimmed : t));
+    const { error } = await supabase.from('nationalities').update({ name: trimmed }).eq('name', oldName);
+    if (error) console.error("Error updating nationality:", error);
+  };
+
+  const deleteNationality = async (name: string) => {
+    setNationalities(prev => prev.filter(t => t !== name));
+    const { error } = await supabase.from('nationalities').delete().eq('name', name);
+    if (error) console.error("Error deleting nationality:", error);
+  };
+
   const archiveAndResetCurrentData = async () => {
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
@@ -740,6 +803,10 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
         addHalqaType,
         updateHalqaType,
         deleteHalqaType,
+        nationalities,
+        addNationality,
+        updateNationality,
+        deleteNationality,
         archives,
         archiveAndResetCurrentData,
         deleteArchive,
