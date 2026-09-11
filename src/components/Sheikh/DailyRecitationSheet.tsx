@@ -289,7 +289,7 @@ export const DailyRecitationSheet: React.FC = () => {
   // Save Single Student Across Date Range
   const handleSaveStudentRange = async () => {
     if (!selectedStudent) return;
-    const recordsToSave = Object.entries(studentDateRows)
+    const recordsToSave = (Object.entries(studentDateRows) as [string, RowState][])
       .filter(([_, row]) => row.recordId || row.newSurah || row.revSurah || row.revToSurah || row.notes || row.newFrom !== '' || row.revFrom !== '')
       .map(([dStr, row]) => ({
         id: row.recordId,
