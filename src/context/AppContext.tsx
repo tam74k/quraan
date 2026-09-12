@@ -55,8 +55,8 @@ interface AppContextType {
   updateUser: (id: string, user: Partial<User>) => void;
   deleteUser: (id: string) => void;
   assignStudentToSheikh: (studentId: number, sheikhId: number | null) => void;
-  saveTrackingRecord: (record: Omit<TrackingRecord, 'id'> & { id?: number }) => TrackingRecord;
-  saveBatchTrackingRecords: (records: (Omit<TrackingRecord, 'id'> & { id?: number })[]) => void;
+  saveTrackingRecord: (record: Omit<TrackingRecord, 'id'> & { id?: number }) => Promise<TrackingRecord>;
+  saveBatchTrackingRecords: (records: (Omit<TrackingRecord, 'id'> & { id?: number })[]) => Promise<{ success: boolean; count: number; error?: string }>;
   deleteTrackingRecord: (id: number) => void;
   addNote: (note: Omit<Note, 'id'>) => void;
   markNotesAsRead: (studentIds: number[]) => void;
@@ -194,7 +194,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         supabase.from('sheikhs').select('*'),
         supabase.from('admins').select('*'),
         supabase.from('students').select('*'),
-        supabase.from('tracking').select('*'),
+        supabase.from('tracking').select('*').order('id', { ascending: false }),
         supabase.from('notes').select('*'),
         supabase.from('exams').select('*'),
         supabase.from('badges').select('*'),
@@ -498,120 +498,175 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
     const __res = await supabase.from("students").update({ sheikh_id: sheikhId }).eq("id", studentId); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
   };
 
-  const saveTrackingRecord = (record: Omit<TrackingRecord, "id"> & { id?: number }): TrackingRecord => {
-    let saved: TrackingRecord;
-    const isUpdate = !!record.id;
-    const tempId = record.id || Date.now();
-    saved = { ...(record as any), id: tempId };
+  const saveTrackingRecord = async (record: Omit<TrackingRecord, "id"> & { id?: number }): Promise<TrackingRecord> => {
+    const isRealDbId = typeof record.id === 'number' && record.id > 0 && record.id < 1000000000;
     
-    if (isUpdate) {
-      setTracking(prev => prev.map(t => (t.id === record.id ? saved : t)));
-    } else {
-      setTracking(prev => [saved, ...prev]);
+    // Find if record already exists by real ID or by (student_id, date)
+    let targetDbId: number | undefined = isRealDbId ? record.id : undefined;
+    if (!targetDbId) {
+      const existing = tracking.find(t => t.studentId === record.studentId && t.date === record.date && t.id > 0 && t.id < 1000000000);
+      if (existing) {
+        targetDbId = existing.id;
+      }
     }
 
     const payload = {
-      student_id: saved.studentId,
-      sheikh_id: saved.sheikhId,
-      date: saved.date,
-      new_surah: saved.newSurah,
-      new_from: saved.newFrom,
-      new_to: saved.newTo,
-      rev_surah: saved.revSurah,
-      rev_from: saved.revFrom,
-      rev_to: saved.revTo,
-      big_rev_surah: saved.bigRevSurah,
-      big_rev_from: saved.bigRevFrom,
-      big_rev_to: saved.bigRevTo,
-      att: saved.att,
-      eval: saved.eval,
-      notes: saved.notes,
-      status: saved.status,
-      read_by_parent: saved.readByParent
+      student_id: record.studentId,
+      sheikh_id: (typeof record.sheikhId === 'number' && record.sheikhId > 0) ? record.sheikhId : null,
+      date: record.date,
+      new_surah: record.newSurah || '',
+      new_from: (record.newFrom === '' || record.newFrom === undefined) ? null : Number(record.newFrom),
+      new_to: (record.newTo === '' || record.newTo === undefined) ? null : Number(record.newTo),
+      rev_surah: record.revSurah || '',
+      rev_from: (record.revFrom === '' || record.revFrom === undefined) ? null : Number(record.revFrom),
+      rev_to: (record.revTo === '' || record.revTo === undefined) ? null : Number(record.revTo),
+      rev_to_surah: record.revToSurah || '',
+      rev_to_from: (record.revToFrom === '' || record.revToFrom === undefined) ? null : Number(record.revToFrom),
+      rev_to_to: (record.revToTo === '' || record.revToTo === undefined) ? null : Number(record.revToTo),
+      big_rev_surah: record.bigRevSurah || null,
+      big_rev_from: (record.bigRevFrom === '' || record.bigRevFrom === undefined) ? null : Number(record.bigRevFrom),
+      big_rev_to: (record.bigRevTo === '' || record.bigRevTo === undefined) ? null : Number(record.bigRevTo),
+      att: record.att || null,
+      eval: record.eval || 'ممتاز',
+      notes: record.notes || '',
+      status: record.status || 'approved',
+      read_by_parent: record.readByParent || false
     };
 
-    if (isUpdate) {
-      supabase.from("tracking").update(payload).eq("id", record.id);
+    let savedId = targetDbId;
+    if (targetDbId) {
+      const { data, error } = await supabase.from("tracking").update(payload).eq("id", targetDbId).select().single();
+      if (error) {
+        console.error("Supabase Tracking Update Error:", error);
+        alert("فشل تحديث سجل المتابعة في قاعدة البيانات: " + error.message);
+      } else if (data) {
+        savedId = data.id;
+      }
     } else {
-      supabase.from("tracking").insert(payload).select().single().then(({ data }) => {
-        if (data) setTracking(prev => prev.map(t => t.id === tempId ? { ...t, id: data.id } : t));
-      });
-    }
-
-    return saved;
-  };
-
-  const saveBatchTrackingRecords = async (records: (Omit<TrackingRecord, "id"> & { id?: number })[]) => {
-    // Optimistic
-    setTracking(prev => {
-      const updated = [...prev];
-      records.forEach(r => {
-        if (r.id) {
-          const index = updated.findIndex(t => t.id === r.id);
-          if (index !== -1) updated[index] = r as TrackingRecord;
-          else updated.unshift(r as TrackingRecord);
-        } else {
-          updated.unshift({ ...r, id: Date.now() + Math.random() } as TrackingRecord);
-        }
-      });
-      return updated;
-    });
-
-    for (const record of records) {
-      const payload = {
-        student_id: record.studentId,
-        sheikh_id: record.sheikhId,
-        date: record.date,
-        new_surah: record.newSurah,
-        new_from: record.newFrom,
-        new_to: record.newTo,
-        rev_surah: record.revSurah,
-        rev_from: record.revFrom,
-        rev_to: record.revTo,
-        rev_to_surah: record.revToSurah,
-        rev_to_from: record.revToFrom,
-        rev_to_to: record.revToTo,
-        big_rev_surah: record.bigRevSurah,
-        big_rev_from: record.bigRevFrom,
-        big_rev_to: record.bigRevTo,
-        att: record.att,
-        eval: record.eval,
-        notes: record.notes,
-        status: record.status,
-        read_by_parent: record.readByParent
-      };
-      if (record.id) {
-        const __res = await supabase.from("tracking").update(payload).eq("id", record.id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
-      } else {
-        await supabase.from("tracking").insert(payload);
+      const { data, error } = await supabase.from("tracking").insert(payload).select().single();
+      if (error) {
+        console.error("Supabase Tracking Insert Error:", error);
+        alert("فشل إضافة سجل المتابعة إلى قاعدة البيانات: " + error.message);
+      } else if (data) {
+        savedId = data.id;
       }
     }
-    // refresh all tracking after batch
-    const { data } = await supabase.from("tracking").select("*");
-    if (data) {
-      setTracking(data.map((t: any) => ({
-        id: t.id,
-        studentId: t.student_id,
-        sheikhId: t.sheikh_id,
-        date: t.date,
-        newSurah: t.new_surah,
-        newFrom: t.new_from,
-        newTo: t.new_to,
-        revSurah: t.rev_surah,
-        revFrom: t.rev_from,
-        revTo: t.rev_to,
-        revToSurah: t.rev_to_surah,
-        revToFrom: t.rev_to_from,
-        revToTo: t.rev_to_to,
-        bigRevSurah: t.big_rev_surah,
-        bigRevFrom: t.big_rev_from,
-        bigRevTo: t.big_rev_to,
-        att: t.att,
-        eval: t.eval,
-        notes: t.notes,
-        status: t.status,
-        readByParent: t.read_by_parent
-      })));
+
+    const savedRecord: TrackingRecord = {
+      ...(record as any),
+      id: savedId || record.id || Date.now()
+    };
+
+    setTracking(prev => {
+      const idx = prev.findIndex(t => t.id === savedRecord.id || (t.studentId === savedRecord.studentId && t.date === savedRecord.date));
+      if (idx !== -1) {
+        const copy = [...prev];
+        copy[idx] = savedRecord;
+        return copy;
+      }
+      return [savedRecord, ...prev];
+    });
+
+    return savedRecord;
+  };
+
+  const saveBatchTrackingRecords = async (records: (Omit<TrackingRecord, "id"> & { id?: number })[]): Promise<{ success: boolean; count: number; error?: string }> => {
+    if (!records || records.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    try {
+      let successCount = 0;
+      let lastError: string | undefined;
+
+      for (const record of records) {
+        const isRealDbId = typeof record.id === 'number' && record.id > 0 && record.id < 1000000000;
+        let targetDbId: number | undefined = isRealDbId ? record.id : undefined;
+
+        if (!targetDbId) {
+          const existing = tracking.find(t => t.studentId === record.studentId && t.date === record.date && t.id > 0 && t.id < 1000000000);
+          if (existing) {
+            targetDbId = existing.id;
+          }
+        }
+
+        const payload = {
+          student_id: record.studentId,
+          sheikh_id: (typeof record.sheikhId === 'number' && record.sheikhId > 0) ? record.sheikhId : null,
+          date: record.date,
+          new_surah: record.newSurah || '',
+          new_from: (record.newFrom === '' || record.newFrom === undefined) ? null : Number(record.newFrom),
+          new_to: (record.newTo === '' || record.newTo === undefined) ? null : Number(record.newTo),
+          rev_surah: record.revSurah || '',
+          rev_from: (record.revFrom === '' || record.revFrom === undefined) ? null : Number(record.revFrom),
+          rev_to: (record.revTo === '' || record.revTo === undefined) ? null : Number(record.revTo),
+          rev_to_surah: record.revToSurah || '',
+          rev_to_from: (record.revToFrom === '' || record.revToFrom === undefined) ? null : Number(record.revToFrom),
+          rev_to_to: (record.revToTo === '' || record.revToTo === undefined) ? null : Number(record.revToTo),
+          big_rev_surah: record.bigRevSurah || null,
+          big_rev_from: (record.bigRevFrom === '' || record.bigRevFrom === undefined) ? null : Number(record.bigRevFrom),
+          big_rev_to: (record.bigRevTo === '' || record.bigRevTo === undefined) ? null : Number(record.bigRevTo),
+          att: record.att || null,
+          eval: record.eval || 'ممتاز',
+          notes: record.notes || '',
+          status: record.status || 'approved',
+          read_by_parent: record.readByParent || false
+        };
+
+        if (targetDbId) {
+          const { error } = await supabase.from("tracking").update(payload).eq("id", targetDbId);
+          if (error) {
+            console.error("Supabase Batch Update Error:", error);
+            lastError = error.message;
+          } else {
+            successCount++;
+          }
+        } else {
+          const { error } = await supabase.from("tracking").insert(payload);
+          if (error) {
+            console.error("Supabase Batch Insert Error:", error);
+            lastError = error.message;
+          } else {
+            successCount++;
+          }
+        }
+      }
+
+      // Refresh tracking from database with latest records
+      const { data, error: selectErr } = await supabase.from("tracking").select("*").order("id", { ascending: false });
+      if (data && !selectErr) {
+        setTracking(data.map((t: any) => ({
+          id: t.id,
+          studentId: t.student_id,
+          sheikhId: t.sheikh_id,
+          date: t.date,
+          newSurah: t.new_surah,
+          newFrom: t.new_from,
+          newTo: t.new_to,
+          revSurah: t.rev_surah,
+          revFrom: t.rev_from,
+          revTo: t.rev_to,
+          revToSurah: t.rev_to_surah,
+          revToFrom: t.rev_to_from,
+          revToTo: t.rev_to_to,
+          bigRevSurah: t.big_rev_surah,
+          bigRevFrom: t.big_rev_from,
+          bigRevTo: t.big_rev_to,
+          att: t.att,
+          eval: t.eval,
+          notes: t.notes,
+          status: t.status,
+          readByParent: t.read_by_parent
+        })));
+      }
+
+      if (lastError) {
+        return { success: false, count: successCount, error: lastError };
+      }
+      return { success: true, count: successCount };
+    } catch (err: any) {
+      console.error("saveBatchTrackingRecords exception:", err);
+      return { success: false, count: 0, error: err.message || 'Unknown error' };
     }
   };
 

@@ -13,7 +13,8 @@ import {
   Sparkles,
   BookOpen,
   MessageSquare,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 
 interface FullTrackingModalProps {
@@ -98,32 +99,38 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
     }
   }, [date, student.id, tracking]);
 
-  const handleSubmit = (statusType: 'draft' | 'approved') => {
-    saveTrackingRecord({
-      id: formData.id,
-      studentId: student.id,
-      date,
-      newSurah: formData.newSurah,
-      newFrom: formData.newFrom === '' ? null : Number(formData.newFrom),
-      newTo: formData.newTo === '' ? null : Number(formData.newTo),
-      revSurah: formData.revSurah,
-      revFrom: formData.revFrom === '' ? null : Number(formData.revFrom),
-      revTo: formData.revTo === '' ? null : Number(formData.revTo),
-      revToSurah: formData.revToSurah,
-      revToFrom: formData.revToFrom === '' ? null : Number(formData.revToFrom),
-      revToTo: formData.revToTo === '' ? null : Number(formData.revToTo),
-      bigRevSurah: formData.bigRevSurah,
-      bigRevFrom: formData.bigRevFrom === '' ? null : Number(formData.bigRevFrom),
-      bigRevTo: formData.bigRevTo === '' ? null : Number(formData.bigRevTo),
-      eval: formData.eval,
-      tajweedEval: formData.tajweedEval,
-      notes: formData.notes,
-      status: statusType,
-      readByParent: false,
-      sheikhId: student.sheikhId || undefined
-    });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    onClose();
+  const handleSubmit = async (statusType: 'draft' | 'approved') => {
+    setIsSubmitting(true);
+    try {
+      await saveTrackingRecord({
+        id: formData.id,
+        studentId: student.id,
+        date,
+        newSurah: formData.newSurah,
+        newFrom: formData.newFrom === '' ? null : Number(formData.newFrom),
+        newTo: formData.newTo === '' ? null : Number(formData.newTo),
+        revSurah: formData.revSurah,
+        revFrom: formData.revFrom === '' ? null : Number(formData.revFrom),
+        revTo: formData.revTo === '' ? null : Number(formData.revTo),
+        revToSurah: formData.revToSurah,
+        revToFrom: formData.revToFrom === '' ? null : Number(formData.revToFrom),
+        revToTo: formData.revToTo === '' ? null : Number(formData.revToTo),
+        bigRevSurah: formData.bigRevSurah,
+        bigRevFrom: formData.bigRevFrom === '' ? null : Number(formData.bigRevFrom),
+        bigRevTo: formData.bigRevTo === '' ? null : Number(formData.bigRevTo),
+        eval: formData.eval,
+        tajweedEval: formData.tajweedEval,
+        notes: formData.notes,
+        status: statusType,
+        readByParent: false,
+        sheikhId: student.sheikhId || undefined
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const studentHistory = tracking
@@ -365,8 +372,9 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={() => handleSubmit('draft')}
-                className="px-4 py-2.5 rounded-xl border border-amber-400 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-xs font-bold transition-all cursor-pointer"
+                className={`px-4 py-2.5 rounded-xl border border-amber-400 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-xs font-bold transition-all ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 حفظ كمسودة مؤقتة
               </button>
@@ -374,6 +382,7 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={onClose}
                   className="px-4 py-2.5 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
                 >
@@ -381,9 +390,17 @@ export const FullTrackingModal: React.FC<FullTrackingModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer transition-all"
+                  disabled={isSubmitting}
+                  className={`flex items-center gap-2 px-6 py-2.5 ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800 cursor-pointer'} text-white text-xs font-bold rounded-xl shadow-md transition-all`}
                 >
-                  اعتماد السجل النهائي
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>جاري الحفظ في قاعدة البيانات...</span>
+                    </>
+                  ) : (
+                    <span>اعتماد السجل النهائي</span>
+                  )}
                 </button>
               </div>
             </div>

@@ -13,7 +13,8 @@ import {
   Eye,
   Sparkles,
   Filter,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 
 const ARABIC_DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -106,6 +107,7 @@ export const DailyRecitationSheet: React.FC = () => {
   const datesInRange = getDatesInRange(dateFrom, dateTo);
 
   const [successMsg, setSuccessMsg] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [activeTrackingStudent, setActiveTrackingStudent] = useState<Student | null>(null);
   const [activeTrackingDate, setActiveTrackingDate] = useState<string>(recitationDate);
 
@@ -260,53 +262,98 @@ export const DailyRecitationSheet: React.FC = () => {
   };
 
   // Save All Students on single date
-  const handleSaveAll = () => {
-    const payload = Object.entries(gridRows).map(([sId, row]: [string, any]) => ({
+  const handleSaveAll = async () => {
+    // Filter only rows that have either an existing recordId OR non-empty fields
+    const activeEntries = (Object.entries(gridRows) as [string, RowState][]).filter(([_, row]) => {
+      return (
+        row.recordId ||
+        row.newSurah ||
+        row.newFrom !== '' ||
+        row.newTo !== '' ||
+        row.revSurah ||
+        row.revFrom !== '' ||
+        row.revTo !== '' ||
+        row.revToSurah ||
+        row.revToFrom !== '' ||
+        row.revToTo !== '' ||
+        row.notes ||
+        row.eval !== 'ممتاز'
+      );
+    });
+
+    if (activeEntries.length === 0) {
+      alert('لم يتم إدخال أي بيانات جديدة أو مقررات حفظ وتسميع لحفظها.');
+      return;
+    }
+
+    const payload = activeEntries.map(([sId, row]) => ({
       id: row.recordId,
       studentId: Number(sId),
       date: recitationDate,
-      newSurah: row.newSurah,
+      newSurah: row.newSurah || '',
       newFrom: row.newFrom === '' ? null : Number(row.newFrom),
       newTo: row.newTo === '' ? null : Number(row.newTo),
-      revSurah: row.revSurah,
+      revSurah: row.revSurah || '',
       revFrom: row.revFrom === '' ? null : Number(row.revFrom),
       revTo: row.revTo === '' ? null : Number(row.revTo),
-      revToSurah: row.revToSurah,
+      revToSurah: row.revToSurah || '',
       revToFrom: row.revToFrom === '' ? null : Number(row.revToFrom),
       revToTo: row.revToTo === '' ? null : Number(row.revToTo),
-      eval: row.eval,
-      notes: row.notes,
-      status: row.status,
+      eval: row.eval || 'ممتاز',
+      notes: row.notes || '',
+      status: row.status || 'approved',
       readByParent: false,
       sheikhId: activeSheikh?.id
     }));
 
-    saveBatchTrackingRecords(payload);
-    setSuccessMsg('تم حفظ وتحديث جدول متابعة الحلقة لجميع الطلاب بنجاح!');
-    setTimeout(() => setSuccessMsg(''), 4000);
+    setIsSaving(true);
+    try {
+      const res = await saveBatchTrackingRecords(payload);
+      if (res.success) {
+        setSuccessMsg(`تم حفظ وتحديث جدول متابعة الحلقة لـ (${payload.length} طالب) في قاعدة البيانات بنجاح!`);
+        setTimeout(() => setSuccessMsg(''), 4500);
+      } else {
+        alert('حدث خطأ أثناء الحفظ في قاعدة البيانات: ' + (res.error || 'يرجى المحاولة مرة أخرى'));
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Save Single Student Across Date Range
   const handleSaveStudentRange = async () => {
     if (!selectedStudent) return;
     const recordsToSave = (Object.entries(studentDateRows) as [string, RowState][])
-      .filter(([_, row]) => row.recordId || row.newSurah || row.revSurah || row.revToSurah || row.notes || row.newFrom !== '' || row.revFrom !== '')
+      .filter(([_, row]) => 
+        row.recordId || 
+        row.newSurah || 
+        row.revSurah || 
+        row.revToSurah || 
+        row.notes || 
+        row.newFrom !== '' || 
+        row.newTo !== '' || 
+        row.revFrom !== '' || 
+        row.revTo !== '' || 
+        row.revToFrom !== '' || 
+        row.revToTo !== '' || 
+        row.eval !== 'ممتاز'
+      )
       .map(([dStr, row]) => ({
         id: row.recordId,
         studentId: selectedStudent.id,
         date: dStr,
-        newSurah: row.newSurah,
+        newSurah: row.newSurah || '',
         newFrom: row.newFrom === '' ? null : Number(row.newFrom),
         newTo: row.newTo === '' ? null : Number(row.newTo),
-        revSurah: row.revSurah,
+        revSurah: row.revSurah || '',
         revFrom: row.revFrom === '' ? null : Number(row.revFrom),
         revTo: row.revTo === '' ? null : Number(row.revTo),
-        revToSurah: row.revToSurah,
+        revToSurah: row.revToSurah || '',
         revToFrom: row.revToFrom === '' ? null : Number(row.revToFrom),
         revToTo: row.revToTo === '' ? null : Number(row.revToTo),
-        eval: row.eval,
-        notes: row.notes,
-        status: row.status,
+        eval: row.eval || 'ممتاز',
+        notes: row.notes || '',
+        status: row.status || 'approved',
         readByParent: false,
         sheikhId: activeSheikh?.id
       }));
@@ -316,9 +363,18 @@ export const DailyRecitationSheet: React.FC = () => {
       return;
     }
 
-    await saveBatchTrackingRecords(recordsToSave);
-    setSuccessMsg(`تم حفظ وتحديث متابعة الطالب (${selectedStudent.name}) للفترة المحددة (${recordsToSave.length} سجل) بنجاح!`);
-    setTimeout(() => setSuccessMsg(''), 4500);
+    setIsSaving(true);
+    try {
+      const res = await saveBatchTrackingRecords(recordsToSave);
+      if (res.success) {
+        setSuccessMsg(`تم حفظ وتحديث متابعة الطالب (${selectedStudent.name}) للفترة المحددة (${recordsToSave.length} سجل) في قاعدة البيانات بنجاح!`);
+        setTimeout(() => setSuccessMsg(''), 4500);
+      } else {
+        alert('حدث خطأ أثناء الحفظ في قاعدة البيانات: ' + (res.error || 'يرجى المحاولة مرة أخرى'));
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const evalOptions: TrackingRecord['eval'][] = ['ممتاز', 'جيد جدا', 'جيد', 'مقبول', 'ضعيف', 'لم يحفظ'];
@@ -346,10 +402,20 @@ export const DailyRecitationSheet: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={selectedStudent ? handleSaveStudentRange : handleSaveAll}
-              className="flex items-center gap-2 px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              disabled={isSaving}
+              className={`flex items-center gap-2 px-6 py-2.5 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800 cursor-pointer'} text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all`}
             >
-              <Save className="w-4 h-4" />
-              <span>{selectedStudent ? `حفظ متابعة الطالب (${selectedStudent.name})` : 'حفظ واعتماد جدول الحلقة'}</span>
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>جاري الحفظ في قاعدة البيانات...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>{selectedStudent ? `حفظ متابعة الطالب (${selectedStudent.name})` : 'حفظ واعتماد جدول الحلقة'}</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -714,6 +780,30 @@ export const DailyRecitationSheet: React.FC = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Bottom Save Bar for All Students */}
+            <div className="p-4 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
+                إجمالي طلاب الحلقة: <strong>{halqaStudents.length} طالب</strong>
+              </span>
+              <button
+                onClick={handleSaveAll}
+                disabled={isSaving}
+                className={`flex items-center gap-2 px-6 py-2.5 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800 cursor-pointer'} text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all`}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>جاري الحفظ في قاعدة البيانات...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>حفظ واعتماد جدول الحلقة</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -990,10 +1080,20 @@ export const DailyRecitationSheet: React.FC = () => {
               </span>
               <button
                 onClick={handleSaveStudentRange}
-                className="flex items-center gap-2 px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
+                disabled={isSaving}
+                className={`flex items-center gap-2 px-6 py-2.5 ${isSaving ? 'bg-slate-400 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800 cursor-pointer'} text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all`}
               >
-                <Save className="w-4 h-4" />
-                <span>حفظ واعتماد متابعة الطالب ({selectedStudent.name})</span>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>جاري الحفظ في قاعدة البيانات...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>حفظ واعتماد متابعة الطالب ({selectedStudent.name})</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
