@@ -145,15 +145,15 @@ export const StudentsManager: React.FC = () => {
     const payload = {
       name: formData.name,
       civilId: formData.civilId,
-      dob: formData.dob,
+      dob: formData.dob ? formData.dob : null,
       age: Number(formData.age),
       grade: formData.grade,
       nationality: formData.nationality,
-      parentName: formData.parentName,
+      parentName: formData.parentName ? formData.parentName : null,
       parentPhone: formData.parentPhone,
       sheikhId: formData.sheikhId ? Number(formData.sheikhId) : null,
       status: formData.status,
-      notes: formData.notes,
+      notes: formData.notes ? formData.notes : null,
       targetJuz: Number(formData.targetJuz),
       halqaType: formData.halqaType,
       joinDate: editingStudent?.joinDate || new Date().toISOString().split('T')[0]

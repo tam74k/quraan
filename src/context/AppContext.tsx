@@ -53,8 +53,8 @@ interface AppContextType {
   deleteAdmin: (id: number) => void;
   addUser: (user: User) => void;
   updateUser: (id: string, user: Partial<User>) => void;
-  deleteUser: (id: string) => void;
-  assignStudentToSheikh: (studentId: number, sheikhId: number | null) => void;
+  assignStudentToSheikh: (studentId: number, sheikhId: number | null) => Promise<{ success: boolean; error?: string }>;
+  refreshData: () => Promise<void>;
   saveTrackingRecord: (record: Omit<TrackingRecord, 'id'> & { id?: number }) => Promise<TrackingRecord>;
   saveBatchTrackingRecords: (records: (Omit<TrackingRecord, 'id'> & { id?: number })[]) => Promise<{ success: boolean; count: number; error?: string }>;
   deleteTrackingRecord: (id: number) => void;
@@ -170,8 +170,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
+    // Realtime subscription for students table across multiple devices
+    const studentsChannel = supabase
+      .channel('realtime:students')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, async () => {
+        const { data: freshStudents } = await supabase.from('students').select('*');
+        if (freshStudents) {
+          setStudents(freshStudents.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            civilId: s.civil_id,
+            dob: s.dob,
+            age: s.age,
+            grade: s.grade,
+            nationality: s.nationality || 'كويتي',
+            parentName: s.parent_name,
+            parentPhone: s.parent_phone,
+            parentEmail: s.parent_email,
+            sheikhId: s.sheikh_id,
+            status: s.status,
+            joinDate: s.join_date,
+            currentJuz: s.current_juz,
+            targetJuz: s.target_juz,
+            points: s.points,
+            notes: s.notes,
+            halqaType: s.halqa_type || ''
+          })));
+        }
+      })
+      .subscribe();
+
     return () => {
       authListener.subscription.unsubscribe();
+      supabase.removeChannel(studentsChannel);
     };
   }, []);
 
@@ -363,7 +394,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newStudent: Student = { ...studentData, id: tempId, joinDate: studentData.joinDate || new Date().toISOString().split("T")[0], status: studentData.status || "Active", points: studentData.points || 0, nationality: studentData.nationality || 'كويتي' };
     setStudents(prev => [newStudent, ...prev]);
     supabase.from("students").insert({
-      name: newStudent.name, civil_id: newStudent.civilId, dob: newStudent.dob, age: newStudent.age, grade: newStudent.grade, nationality: newStudent.nationality, parent_name: newStudent.parentName, parent_phone: newStudent.parentPhone, parent_email: newStudent.parentEmail, sheikh_id: newStudent.sheikhId, status: newStudent.status, join_date: newStudent.joinDate, current_juz: newStudent.currentJuz, target_juz: newStudent.targetJuz, points: newStudent.points, notes: newStudent.notes, halqa_type: newStudent.halqaType || ''
+      name: newStudent.name,
+      civil_id: newStudent.civilId,
+      dob: newStudent.dob ? newStudent.dob : null,
+      age: newStudent.age,
+      grade: newStudent.grade,
+      nationality: newStudent.nationality,
+      parent_name: newStudent.parentName || null,
+      parent_phone: newStudent.parentPhone || '',
+      parent_email: newStudent.parentEmail ? newStudent.parentEmail : null,
+      sheikh_id: (newStudent.sheikhId && Number(newStudent.sheikhId) > 0) ? Number(newStudent.sheikhId) : null,
+      status: newStudent.status,
+      join_date: newStudent.joinDate ? newStudent.joinDate : null,
+      current_juz: newStudent.currentJuz || 1,
+      target_juz: newStudent.targetJuz || 5,
+      points: newStudent.points || 0,
+      notes: newStudent.notes || null,
+      halqa_type: newStudent.halqaType || ''
     }).select().single().then(({ data, error }) => {
       if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
       if (data) setStudents(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
@@ -376,22 +423,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updatePayload: any = {};
     if (studentData.name !== undefined) updatePayload.name = studentData.name;
     if (studentData.civilId !== undefined) updatePayload.civil_id = studentData.civilId;
-    if (studentData.dob !== undefined) updatePayload.dob = studentData.dob;
+    if (studentData.dob !== undefined) updatePayload.dob = studentData.dob ? studentData.dob : null;
     if (studentData.age !== undefined) updatePayload.age = studentData.age;
     if (studentData.grade !== undefined) updatePayload.grade = studentData.grade;
     if (studentData.nationality !== undefined) updatePayload.nationality = studentData.nationality;
     if (studentData.parentName !== undefined) updatePayload.parent_name = studentData.parentName;
     if (studentData.parentPhone !== undefined) updatePayload.parent_phone = studentData.parentPhone;
-    if (studentData.parentEmail !== undefined) updatePayload.parent_email = studentData.parentEmail;
-    if (studentData.sheikhId !== undefined) updatePayload.sheikh_id = studentData.sheikhId;
+    if (studentData.parentEmail !== undefined) updatePayload.parent_email = studentData.parentEmail ? studentData.parentEmail : null;
+    if (studentData.sheikhId !== undefined) updatePayload.sheikh_id = (studentData.sheikhId && Number(studentData.sheikhId) > 0) ? Number(studentData.sheikhId) : null;
     if (studentData.status !== undefined) updatePayload.status = studentData.status;
-    if (studentData.joinDate !== undefined) updatePayload.join_date = studentData.joinDate;
+    if (studentData.joinDate !== undefined) updatePayload.join_date = studentData.joinDate ? studentData.joinDate : null;
     if (studentData.currentJuz !== undefined) updatePayload.current_juz = studentData.currentJuz;
     if (studentData.targetJuz !== undefined) updatePayload.target_juz = studentData.targetJuz;
     if (studentData.points !== undefined) updatePayload.points = studentData.points;
     if (studentData.notes !== undefined) updatePayload.notes = studentData.notes;
     if (studentData.halqaType !== undefined) updatePayload.halqa_type = studentData.halqaType;
-    const __res = await supabase.from("students").update(updatePayload).eq("id", id); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
+    const __res = await supabase.from("students").update(updatePayload).eq("id", id);
+    if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل تحديث بيانات الطالب في قاعدة البيانات: " + __res.error.message); }
   };
 
   const deleteStudent = async (id: number) => {
@@ -493,9 +541,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAdmins(prev => prev.filter(a => a.userId !== id));
     }
   };
-const assignStudentToSheikh = async (studentId: number, sheikhId: number | null) => {
-    setStudents(prev => prev.map(s => (s.id === studentId ? { ...s, sheikhId } : s)));
-    const __res = await supabase.from("students").update({ sheikh_id: sheikhId }).eq("id", studentId); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
+  const assignStudentToSheikh = async (studentId: number, sheikhId: number | null): Promise<{ success: boolean; error?: string }> => {
+    const validSheikhId = (sheikhId && Number(sheikhId) > 0) ? Number(sheikhId) : null;
+    setStudents(prev => prev.map(s => (s.id === studentId ? { ...s, sheikhId: validSheikhId } : s)));
+    const { error } = await supabase.from("students").update({ sheikh_id: validSheikhId }).eq("id", studentId);
+    if (error) {
+      console.error("Supabase assignStudentToSheikh Error:", error);
+      alert("فشل نقل الطالب إلى الحلقة في قاعدة البيانات: " + error.message);
+      // Revert if failed
+      const { data } = await supabase.from("students").select("*");
+      if (data) {
+        setStudents(data.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          civilId: s.civil_id,
+          dob: s.dob,
+          age: s.age,
+          grade: s.grade,
+          nationality: s.nationality || 'كويتي',
+          parentName: s.parent_name,
+          parentPhone: s.parent_phone,
+          parentEmail: s.parent_email,
+          sheikhId: s.sheikh_id,
+          status: s.status,
+          joinDate: s.join_date,
+          currentJuz: s.current_juz,
+          targetJuz: s.target_juz,
+          points: s.points,
+          notes: s.notes,
+          halqaType: s.halqa_type || ''
+        })));
+      }
+      return { success: false, error: error.message };
+    }
+    return { success: true };
   };
 
   const saveTrackingRecord = async (record: Omit<TrackingRecord, "id"> & { id?: number }): Promise<TrackingRecord> => {
@@ -846,13 +925,17 @@ const assignStudentToSheikh = async (studentId: number, sheikhId: number | null)
     return null;
   };
 
+  const refreshData = async () => {
+    await fetchInitialData();
+  };
+
   return (
     <AppContext.Provider
       value={{
         currentUser, users, centerInfo, sheikhs, admins, students, tracking, notes, exams, badges,
         isDarkMode, activeScreen, setActiveScreen, toggleDarkMode, login, switchRole, logout,
         updateCenterInfo, addStudent, updateStudent, deleteStudent, addSheikh, updateSheikh, deleteSheikh,
-        addAdmin, updateAdmin, deleteAdmin, addUser, updateUser, deleteUser, assignStudentToSheikh, saveTrackingRecord,
+        addAdmin, updateAdmin, deleteAdmin, addUser, updateUser, deleteUser, assignStudentToSheikh, refreshData, saveTrackingRecord,
         saveBatchTrackingRecords, deleteTrackingRecord, addNote, markNotesAsRead, addExam, addBadge,
         halqaTypes,
         addHalqaType,
