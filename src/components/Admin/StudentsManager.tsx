@@ -60,7 +60,7 @@ export const StudentsManager: React.FC = () => {
     nationality: 'كويتي',
     parentName: '',
     parentPhone: '',
-
+    parentEmail: '',
     sheikhId: '' as string | number,
     status: 'Active' as Student['status'],
     notes: '',
@@ -78,13 +78,11 @@ export const StudentsManager: React.FC = () => {
       age: 10,
       grade: 'المتوسط',
       nationality: nationalities[0] || 'كويتي',
-
       parentName: '',
       parentPhone: '',
-      
+      parentEmail: '',
       sheikhId: sheikhs.find(s => s.active)?.id || '',
       status: 'Active',
-  
       notes: '',
       targetJuz: 5,
       halqaType: halqaTypes[0] || ''
@@ -103,7 +101,8 @@ export const StudentsManager: React.FC = () => {
       grade: student.grade,
       nationality: student.nationality || nationalities[0] || 'كويتي',
       parentName: student.parentName || '',
-      parentPhone: student.parentPhone,
+      parentPhone: student.parentPhone || '',
+      parentEmail: student.parentEmail || '',
       sheikhId: student.sheikhId || '',
       status: student.status,
       notes: student.notes || '',
@@ -143,18 +142,19 @@ export const StudentsManager: React.FC = () => {
     }
 
     const payload = {
-      name: formData.name,
-      civilId: formData.civilId,
+      name: formData.name.trim(),
+      civilId: formData.civilId.trim(),
       dob: formData.dob ? formData.dob : null,
-      age: Number(formData.age),
+      age: Number(formData.age) || 10,
       grade: formData.grade,
       nationality: formData.nationality,
-      parentName: formData.parentName ? formData.parentName : null,
-      parentPhone: formData.parentPhone,
+      parentName: formData.parentName ? formData.parentName.trim() : '',
+      parentPhone: formData.parentPhone ? formData.parentPhone.trim() : '',
+      parentEmail: formData.parentEmail ? formData.parentEmail.trim() : '',
       sheikhId: formData.sheikhId ? Number(formData.sheikhId) : null,
       status: formData.status,
-      notes: formData.notes ? formData.notes : null,
-      targetJuz: Number(formData.targetJuz),
+      notes: formData.notes ? formData.notes.trim() : '',
+      targetJuz: Number(formData.targetJuz) || 5,
       halqaType: formData.halqaType,
       joinDate: editingStudent?.joinDate || new Date().toISOString().split('T')[0]
     };
@@ -671,13 +671,28 @@ export const StudentsManager: React.FC = () => {
 
                 {/* Parent Phone */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم هاتف ولي الأمر (واتساب)</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    رقم هاتف ولي الأمر (واتساب) <span className="text-slate-400 text-[10px] font-normal">(اختياري)</span>
+                  </label>
                   <input
                     type="tel"
-                    required
                     value={formData.parentPhone}
                     onChange={(e) => setFormData({ ...formData, parentPhone: e.target.value })}
                     placeholder="99991111"
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  />
+                </div>
+
+                {/* Parent Email */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    البريد الإلكتروني لولي الأمر <span className="text-slate-400 text-[10px] font-normal">(اختياري)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.parentEmail}
+                    onChange={(e) => setFormData({ ...formData, parentEmail: e.target.value })}
+                    placeholder="parent@example.com"
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   />
                 </div>

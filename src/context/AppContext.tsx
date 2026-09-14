@@ -391,28 +391,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addStudent = (studentData: Omit<Student, "id">): Student => {
     const tempId = Date.now();
-    const newStudent: Student = { ...studentData, id: tempId, joinDate: studentData.joinDate || new Date().toISOString().split("T")[0], status: studentData.status || "Active", points: studentData.points || 0, nationality: studentData.nationality || 'كويتي' };
+    const newStudent: Student = {
+      ...studentData,
+      id: tempId,
+      joinDate: studentData.joinDate || new Date().toISOString().split("T")[0],
+      status: studentData.status || "Active",
+      points: studentData.points || 0,
+      nationality: studentData.nationality || 'كويتي'
+    };
     setStudents(prev => [newStudent, ...prev]);
-    supabase.from("students").insert({
-      name: newStudent.name,
-      civil_id: newStudent.civilId,
+
+    const payload: any = {
+      name: newStudent.name || '',
+      civil_id: newStudent.civilId || '',
       dob: newStudent.dob ? newStudent.dob : null,
-      age: newStudent.age,
-      grade: newStudent.grade,
-      nationality: newStudent.nationality,
-      parent_name: newStudent.parentName || null,
+      age: Number(newStudent.age) || 10,
+      grade: newStudent.grade || 'المتوسط',
+      nationality: newStudent.nationality || 'كويتي',
+      parent_name: newStudent.parentName || '',
       parent_phone: newStudent.parentPhone || '',
-      parent_email: newStudent.parentEmail ? newStudent.parentEmail : null,
+      parent_email: newStudent.parentEmail || '',
       sheikh_id: (newStudent.sheikhId && Number(newStudent.sheikhId) > 0) ? Number(newStudent.sheikhId) : null,
-      status: newStudent.status,
-      join_date: newStudent.joinDate ? newStudent.joinDate : null,
-      current_juz: newStudent.currentJuz || 1,
-      target_juz: newStudent.targetJuz || 5,
-      points: newStudent.points || 0,
-      notes: newStudent.notes || null,
+      status: newStudent.status || 'Active',
+      join_date: newStudent.joinDate ? newStudent.joinDate : new Date().toISOString().split('T')[0],
+      current_juz: Number(newStudent.currentJuz) || 1,
+      target_juz: Number(newStudent.targetJuz) || 5,
+      points: Number(newStudent.points) || 0,
+      notes: newStudent.notes || '',
       halqa_type: newStudent.halqaType || ''
-    }).select().single().then(({ data, error }) => {
-      if (error) { console.error("Supabase Insert Error:", error); alert("فشل الحفظ في قاعدة البيانات: " + error.message); }
+    };
+
+    supabase.from("students").insert(payload).select().single().then(({ data, error }) => {
+      if (error) {
+        console.error("Supabase Insert Error:", error);
+        alert("فشل الحفظ في قاعدة البيانات: " + error.message);
+      }
       if (data) setStudents(prev => prev.map(s => s.id === tempId ? { ...s, id: data.id } : s));
     });
     return newStudent;
@@ -421,23 +434,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateStudent = async (id: number, studentData: Partial<Student>) => {
     setStudents(prev => prev.map(s => (s.id === id ? { ...s, ...studentData } : s)));
     const updatePayload: any = {};
-    if (studentData.name !== undefined) updatePayload.name = studentData.name;
-    if (studentData.civilId !== undefined) updatePayload.civil_id = studentData.civilId;
+    if (studentData.name !== undefined) updatePayload.name = studentData.name || '';
+    if (studentData.civilId !== undefined) updatePayload.civil_id = studentData.civilId || '';
     if (studentData.dob !== undefined) updatePayload.dob = studentData.dob ? studentData.dob : null;
-    if (studentData.age !== undefined) updatePayload.age = studentData.age;
-    if (studentData.grade !== undefined) updatePayload.grade = studentData.grade;
-    if (studentData.nationality !== undefined) updatePayload.nationality = studentData.nationality;
-    if (studentData.parentName !== undefined) updatePayload.parent_name = studentData.parentName;
-    if (studentData.parentPhone !== undefined) updatePayload.parent_phone = studentData.parentPhone;
-    if (studentData.parentEmail !== undefined) updatePayload.parent_email = studentData.parentEmail ? studentData.parentEmail : null;
+    if (studentData.age !== undefined) updatePayload.age = Number(studentData.age) || 10;
+    if (studentData.grade !== undefined) updatePayload.grade = studentData.grade || 'المتوسط';
+    if (studentData.nationality !== undefined) updatePayload.nationality = studentData.nationality || 'كويتي';
+    if (studentData.parentName !== undefined) updatePayload.parent_name = studentData.parentName || '';
+    if (studentData.parentPhone !== undefined) updatePayload.parent_phone = studentData.parentPhone || '';
+    if (studentData.parentEmail !== undefined) updatePayload.parent_email = studentData.parentEmail || '';
     if (studentData.sheikhId !== undefined) updatePayload.sheikh_id = (studentData.sheikhId && Number(studentData.sheikhId) > 0) ? Number(studentData.sheikhId) : null;
-    if (studentData.status !== undefined) updatePayload.status = studentData.status;
-    if (studentData.joinDate !== undefined) updatePayload.join_date = studentData.joinDate ? studentData.joinDate : null;
-    if (studentData.currentJuz !== undefined) updatePayload.current_juz = studentData.currentJuz;
-    if (studentData.targetJuz !== undefined) updatePayload.target_juz = studentData.targetJuz;
-    if (studentData.points !== undefined) updatePayload.points = studentData.points;
-    if (studentData.notes !== undefined) updatePayload.notes = studentData.notes;
-    if (studentData.halqaType !== undefined) updatePayload.halqa_type = studentData.halqaType;
+    if (studentData.status !== undefined) updatePayload.status = studentData.status || 'Active';
+    if (studentData.joinDate !== undefined) updatePayload.join_date = studentData.joinDate ? studentData.joinDate : new Date().toISOString().split('T')[0];
+    if (studentData.currentJuz !== undefined) updatePayload.current_juz = Number(studentData.currentJuz) || 1;
+    if (studentData.targetJuz !== undefined) updatePayload.target_juz = Number(studentData.targetJuz) || 5;
+    if (studentData.points !== undefined) updatePayload.points = Number(studentData.points) || 0;
+    if (studentData.notes !== undefined) updatePayload.notes = studentData.notes || '';
+    if (studentData.halqaType !== undefined) updatePayload.halqa_type = studentData.halqaType || '';
     const __res = await supabase.from("students").update(updatePayload).eq("id", id);
     if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل تحديث بيانات الطالب في قاعدة البيانات: " + __res.error.message); }
   };
@@ -577,19 +590,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
-  const saveTrackingRecord = async (record: Omit<TrackingRecord, "id"> & { id?: number }): Promise<TrackingRecord> => {
-    const isRealDbId = typeof record.id === 'number' && record.id > 0 && record.id < 1000000000;
-    
-    // Find if record already exists by real ID or by (student_id, date)
-    let targetDbId: number | undefined = isRealDbId ? record.id : undefined;
-    if (!targetDbId) {
-      const existing = tracking.find(t => t.studentId === record.studentId && t.date === record.date && t.id > 0 && t.id < 1000000000);
-      if (existing) {
-        targetDbId = existing.id;
-      }
-    }
+  // Track if 'att' column exists in 'tracking' table to prevent schema cache errors
+  const [isTrackingAttSupported, setIsTrackingAttSupported] = useState<boolean>(false);
 
-    const payload = {
+  useEffect(() => {
+    // Check if 'att' column exists on 'tracking' table
+    supabase.from('tracking').select('att').limit(1).then(({ error }) => {
+      if (!error) {
+        setIsTrackingAttSupported(true);
+      }
+    });
+  }, []);
+
+  const buildTrackingPayload = (record: any, includeAtt: boolean) => {
+    const payload: any = {
       student_id: record.studentId,
       sheikh_id: (typeof record.sheikhId === 'number' && record.sheikhId > 0) ? record.sheikhId : null,
       date: record.date,
@@ -605,16 +619,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       big_rev_surah: record.bigRevSurah || null,
       big_rev_from: (record.bigRevFrom === '' || record.bigRevFrom === undefined) ? null : Number(record.bigRevFrom),
       big_rev_to: (record.bigRevTo === '' || record.bigRevTo === undefined) ? null : Number(record.bigRevTo),
-      att: record.att || null,
       eval: record.eval || 'ممتاز',
       notes: record.notes || '',
       status: record.status || 'approved',
       read_by_parent: record.readByParent || false
     };
 
+    if (includeAtt && record.att) {
+      payload.att = record.att;
+    }
+
+    return payload;
+  };
+
+  const saveTrackingRecord = async (record: Omit<TrackingRecord, "id"> & { id?: number }): Promise<TrackingRecord> => {
+    const isRealDbId = typeof record.id === 'number' && record.id > 0 && record.id < 1000000000;
+    
+    // Find if record already exists by real ID or by (student_id, date)
+    let targetDbId: number | undefined = isRealDbId ? record.id : undefined;
+    if (!targetDbId) {
+      const existing = tracking.find(t => t.studentId === record.studentId && t.date === record.date && t.id > 0 && t.id < 1000000000);
+      if (existing) {
+        targetDbId = existing.id;
+      }
+    }
+
+    let payload = buildTrackingPayload(record, isTrackingAttSupported);
     let savedId = targetDbId;
+
     if (targetDbId) {
-      const { data, error } = await supabase.from("tracking").update(payload).eq("id", targetDbId).select().single();
+      let { data, error } = await supabase.from("tracking").update(payload).eq("id", targetDbId).select().single();
+      if (error && error.message && error.message.toLowerCase().includes("'att'")) {
+        // Fallback: database doesn't have att column
+        setIsTrackingAttSupported(false);
+        delete payload.att;
+        const retry = await supabase.from("tracking").update(payload).eq("id", targetDbId).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
+
       if (error) {
         console.error("Supabase Tracking Update Error:", error);
         alert("فشل تحديث سجل المتابعة في قاعدة البيانات: " + error.message);
@@ -622,7 +665,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         savedId = data.id;
       }
     } else {
-      const { data, error } = await supabase.from("tracking").insert(payload).select().single();
+      let { data, error } = await supabase.from("tracking").insert(payload).select().single();
+      if (error && error.message && error.message.toLowerCase().includes("'att'")) {
+        // Fallback: database doesn't have att column
+        setIsTrackingAttSupported(false);
+        delete payload.att;
+        const retry = await supabase.from("tracking").insert(payload).select().single();
+        data = retry.data;
+        error = retry.error;
+      }
+
       if (error) {
         console.error("Supabase Tracking Insert Error:", error);
         alert("فشل إضافة سجل المتابعة إلى قاعدة البيانات: " + error.message);
@@ -669,31 +721,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
 
-        const payload = {
-          student_id: record.studentId,
-          sheikh_id: (typeof record.sheikhId === 'number' && record.sheikhId > 0) ? record.sheikhId : null,
-          date: record.date,
-          new_surah: record.newSurah || '',
-          new_from: (record.newFrom === '' || record.newFrom === undefined) ? null : Number(record.newFrom),
-          new_to: (record.newTo === '' || record.newTo === undefined) ? null : Number(record.newTo),
-          rev_surah: record.revSurah || '',
-          rev_from: (record.revFrom === '' || record.revFrom === undefined) ? null : Number(record.revFrom),
-          rev_to: (record.revTo === '' || record.revTo === undefined) ? null : Number(record.revTo),
-          rev_to_surah: record.revToSurah || '',
-          rev_to_from: (record.revToFrom === '' || record.revToFrom === undefined) ? null : Number(record.revToFrom),
-          rev_to_to: (record.revToTo === '' || record.revToTo === undefined) ? null : Number(record.revToTo),
-          big_rev_surah: record.bigRevSurah || null,
-          big_rev_from: (record.bigRevFrom === '' || record.bigRevFrom === undefined) ? null : Number(record.bigRevFrom),
-          big_rev_to: (record.bigRevTo === '' || record.bigRevTo === undefined) ? null : Number(record.bigRevTo),
-          att: record.att || null,
-          eval: record.eval || 'ممتاز',
-          notes: record.notes || '',
-          status: record.status || 'approved',
-          read_by_parent: record.readByParent || false
-        };
+        let payload = buildTrackingPayload(record, isTrackingAttSupported);
 
         if (targetDbId) {
-          const { error } = await supabase.from("tracking").update(payload).eq("id", targetDbId);
+          let { error } = await supabase.from("tracking").update(payload).eq("id", targetDbId);
+          if (error && error.message && error.message.toLowerCase().includes("'att'")) {
+            setIsTrackingAttSupported(false);
+            delete payload.att;
+            const retry = await supabase.from("tracking").update(payload).eq("id", targetDbId);
+            error = retry.error;
+          }
+
           if (error) {
             console.error("Supabase Batch Update Error:", error);
             lastError = error.message;
@@ -701,7 +739,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             successCount++;
           }
         } else {
-          const { error } = await supabase.from("tracking").insert(payload);
+          let { error } = await supabase.from("tracking").insert(payload);
+          if (error && error.message && error.message.toLowerCase().includes("'att'")) {
+            setIsTrackingAttSupported(false);
+            delete payload.att;
+            const retry = await supabase.from("tracking").insert(payload);
+            error = retry.error;
+          }
+
           if (error) {
             console.error("Supabase Batch Insert Error:", error);
             lastError = error.message;
@@ -731,7 +776,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           bigRevSurah: t.big_rev_surah,
           bigRevFrom: t.big_rev_from,
           bigRevTo: t.big_rev_to,
-          att: t.att,
+          att: t.att || '',
           eval: t.eval,
           notes: t.notes,
           status: t.status,
@@ -740,12 +785,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       if (lastError) {
-        return { success: false, count: successCount, error: lastError };
+        return { success: successCount > 0, count: successCount, error: lastError };
       }
       return { success: true, count: successCount };
     } catch (err: any) {
       console.error("saveBatchTrackingRecords exception:", err);
-      return { success: false, count: 0, error: err.message || 'Unknown error' };
+      return { success: false, count: 0, error: err?.message || 'فشل الحفظ في قاعدة البيانات' };
     }
   };
 
