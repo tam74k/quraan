@@ -16,7 +16,8 @@ import {
   HeartHandshake,
   FileCheck2,
   UserCog,
-  FolderArchive
+  FolderArchive,
+  UserCheck
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -30,6 +31,7 @@ export const Sidebar: React.FC = () => {
   const adminNavItems = [
     { id: 'dashboard', label: 'اللوحة الرئيسية', icon: LayoutDashboard, badge: null },
     { id: 'daily-halqa', label: 'تسجيل المتابعة اليومية', icon: BookOpenCheck, badge: 'مباشر' },
+    { id: 'attendance', label: 'تسجيل حضور الطلاب', icon: UserCheck, badge: null },
     { id: 'reports', label: 'التقارير والاستمارات', icon: FileText, badge: 'طباعة' },
     { id: 'groups', label: 'تكوين الحلقات', icon: Users2, badge: `${sheikhs.length} حلقات` },
     { id: 'students', label: 'سجل الطلاب', icon: GraduationCap, badge: `${students.length}` },
@@ -46,6 +48,7 @@ export const Sidebar: React.FC = () => {
   // Sheikh navigation items
   const sheikhNavItems = [
     { id: 'daily-halqa', label: 'جدول المتابعة اليومي', icon: BookOpenCheck, badge: 'مباشر' },
+    { id: 'attendance', label: 'تسجيل حضور الطلاب', icon: UserCheck, badge: null },
     { id: 'sheikh-students', label: 'طلاب حلقتي', icon: GraduationCap, badge: null },
     { id: 'sheikh-notes', label: 'سجل الملاحظات والتواصل', icon: MessageSquare, badge: null },
     { id: 'reports', label: 'استمارات وتقارير الحلقة', icon: FileCheck2, badge: null },
@@ -66,6 +69,7 @@ export const Sidebar: React.FC = () => {
   else if (role === 'data_entry') {
     items = [
       { id: 'dashboard', label: 'اللوحة الرئيسية', icon: LayoutDashboard, badge: null },
+      { id: 'attendance', label: 'تسجيل حضور الطلاب', icon: UserCheck, badge: null },
       { id: 'students', label: 'سجل الطلاب', icon: GraduationCap, badge: `${students.length}` },
       { id: 'groups', label: 'توزيع الحلقات', icon: Users2, badge: null },
       { id: 'reports', label: 'التقارير والكشوفات', icon: FileText, badge: null },

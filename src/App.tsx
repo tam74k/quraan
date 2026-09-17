@@ -21,6 +21,7 @@ import { ParentDashboard } from './components/Parent/ParentDashboard';
 import { ParentNotificationsModal } from './components/Parent/ParentNotificationsModal';
 import { ResetPasswordModal } from './components/Auth/ResetPasswordModal';
 import { UserProfileSettings } from './components/Common/UserProfileSettings';
+import { AttendanceManager } from './components/Admin/AttendanceManager';
 import { supabase } from './lib/supabase';
 
 const MainLayout: React.FC = () => {
@@ -57,6 +58,8 @@ const MainLayout: React.FC = () => {
         return <ArchiveView />;
       case 'daily-halqa':
         return <DailyRecitationSheet />;
+      case 'attendance':
+        return <AttendanceManager />;
       case 'sheikh-students':
         return <SheikhStudentsView />;
       case 'sheikh-notes':
