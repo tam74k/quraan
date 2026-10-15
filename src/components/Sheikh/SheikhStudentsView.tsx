@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { Student } from '../../types';
 import { FullTrackingModal } from './FullTrackingModal';
 import { CertificateModal } from '../Common/CertificateModal';
-import { GraduationCap, BookOpen, Award, Phone, Calendar, Sparkles } from 'lucide-react';
+import { BatchCertificatesModal, BatchCertificateItem } from '../Common/BatchCertificatesModal';
+import { GraduationCap, BookOpen, Award, Phone, Calendar, Sparkles, Printer } from 'lucide-react';
 
 export const SheikhStudentsView: React.FC = () => {
   const { students, sheikhs, currentSheikh, tracking } = useApp();
@@ -13,6 +14,33 @@ export const SheikhStudentsView: React.FC = () => {
 
   const [activeTrackingStudent, setActiveTrackingStudent] = useState<Student | null>(null);
   const [certStudent, setCertStudent] = useState<Student | null>(null);
+  const [batchCertData, setBatchCertData] = useState<{
+    certificates: BatchCertificateItem[];
+    halqaTitle: string;
+  } | null>(null);
+
+  const handlePrintAllHalqaCertificates = () => {
+    if (myStudents.length === 0) {
+      alert('لا يوجد طلاب نشطين في الحلقة لطباعة شهاداتهم.');
+      return;
+    }
+    const certs: BatchCertificateItem[] = myStudents.map(st => ({
+      id: st.id,
+      studentName: st.name,
+      sheikhName: activeSheikh?.name || 'فضيلة المحفظ',
+      halqaName: activeSheikh?.halqaName || 'الحلقة القرآنية',
+      halqaType: st.halqaType,
+      title: st.halqaType ? `شهادة تفوق (${st.halqaType})` : 'شهادة إتمام وتفوق قرآني',
+      achievementText: `نظير تميزه واجتهاده في حلقة (${activeSheikh?.halqaName || 'القرآن الكريم'}) ومواظبته على حفظ ومراجعة القرآن الكريم وإتقانه لأحكام التلاوة والتجويد.`,
+      grade: 'ممتاز مرتفع',
+      date: new Date().toISOString().split('T')[0]
+    }));
+
+    setBatchCertData({
+      certificates: certs,
+      halqaTitle: activeSheikh?.halqaName || 'الحلقة'
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -34,6 +62,18 @@ export const SheikhStudentsView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {myStudents.length > 0 && (
+          <button
+            type="button"
+            onClick={handlePrintAllHalqaCertificates}
+            className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-emerald-950 text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
+            title="استخراج وطباعة شهادات جميع طلاب الحلقة دفعة واحدة بمقاس A4"
+          >
+            <Printer className="w-4 h-4" />
+            <span>طباعة شهادات طلاب الحلقة (الكل A4)</span>
+          </button>
+        )}
       </div>
 
       {/* Grid of Student Cards */}
@@ -138,6 +178,16 @@ export const SheikhStudentsView: React.FC = () => {
           studentName={certStudent.name}
           sheikhName={activeSheikh?.name}
           onClose={() => setCertStudent(null)}
+        />
+      )}
+
+      {/* Batch Halqa Certificates Modal */}
+      {batchCertData && (
+        <BatchCertificatesModal
+          certificates={batchCertData.certificates}
+          halqaTitle={batchCertData.halqaTitle}
+          onClose={() => setBatchCertData(null)}
+          autoPrint={true}
         />
       )}
 
