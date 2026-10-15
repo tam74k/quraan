@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { Award, Printer, X, Sparkles, RotateCw, CheckSquare, Square } from 'lucide-react';
 
@@ -42,6 +43,14 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
     (typeof window !== 'undefined' ? localStorage.getItem('center_logo') : '') ||
     '';
 
+  // Activate modal print isolation on body so that the background app (#root) is hidden in print
+  useEffect(() => {
+    document.body.classList.add('printing-modal-active');
+    return () => {
+      document.body.classList.remove('printing-modal-active');
+    };
+  }, []);
+
   // Filter certificates to only selected ones
   const activeCerts = certificates.filter(c => selectedIds.has(c.id));
 
@@ -79,14 +88,14 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
     });
   };
 
-  return (
+  const modalContent = (
     <>
       {/* Print CSS Rules for Exact A4 Page Sizing across All Certificates */}
       <style>{`
         @media print {
           @page {
             size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-            margin: 6mm 7mm !important;
+            margin: 7mm 7mm !important;
           }
           html, body {
             width: 100% !important;
@@ -96,6 +105,11 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
             background: #ffffff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            overflow: visible !important;
+          }
+          /* Completely hide the background main application */
+          body.printing-modal-active > #root {
+            display: none !important;
           }
           .no-print {
             display: none !important;
@@ -106,7 +120,7 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
             height: auto !important;
             padding: 0 !important;
             margin: 0 !important;
-            background: #ffffff !important;
+            background: transparent !important;
             display: block !important;
             overflow: visible !important;
             z-index: 1 !important;
@@ -117,9 +131,12 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
             border: none !important;
             box-shadow: none !important;
             max-width: none !important;
+            max-height: none !important;
             width: 100% !important;
             border-radius: 0 !important;
             background: transparent !important;
+            overflow: visible !important;
+            display: block !important;
           }
           .batch-certificates-list {
             padding: 0 !important;
@@ -448,4 +465,6 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
       </div>
     </>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

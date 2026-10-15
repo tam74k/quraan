@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Crown, Sparkles, Plus, Award, Star, Flame, Trophy, X, Printer, FileText } from 'lucide-react';
+import { Crown, Sparkles, Plus, Award, Star, Flame, Trophy, X, Printer, FileText, Scissors } from 'lucide-react';
 import { Badge } from '../../types';
 import { CertificateModal } from '../Common/CertificateModal';
+import { BadgesPrintModal, PrintableBadgeItem } from '../Common/BadgesPrintModal';
 
 export const HonorBoardManager: React.FC = () => {
   const { students, sheikhs, badges, addBadge, centerInfo } = useApp();
@@ -27,7 +28,8 @@ export const HonorBoardManager: React.FC = () => {
     date: string;
   } | null>(null);
 
-  const [showAllBadgesPrint, setShowAllBadgesPrint] = useState(false);
+  const [showBadgesPrintModal, setShowBadgesPrintModal] = useState(false);
+  const [selectedBadgeForPrintModal, setSelectedBadgeForPrintModal] = useState<PrintableBadgeItem | null>(null);
 
   const [formData, setFormData] = useState({
     studentId: students[0]?.id || 1,
@@ -68,13 +70,27 @@ export const HonorBoardManager: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ منح وسام / تكريم لطالب</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              setSelectedBadgeForPrintModal(null);
+              setShowBadgesPrintModal(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
+            title="طباعة وتوزيع الأوسمة للطلاب بالتنسيق المناسب للقص والتوزيع"
+          >
+            <Printer className="w-4 h-4" />
+            <span>طباعة وتوزيع الأوسمة (PDF)</span>
+          </button>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ منح وسام / تكريم لطالب</span>
+          </button>
+        </div>
       </div>
 
       {/* Top 3 Podium */}
@@ -143,16 +159,14 @@ export const HonorBoardManager: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setShowAllBadgesPrint(true);
-                setTimeout(() => {
-                  window.print();
-                }, 400);
+                setSelectedBadgeForPrintModal(null);
+                setShowBadgesPrintModal(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
-              title="طباعة تقرير بكافة الأوسمة الممنوحة أو تصديره بتنسيق PDF"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs font-bold rounded-xl transition-all cursor-pointer border border-emerald-300 dark:border-emerald-700 shadow-xs"
+              title="طباعة وتوزيع بطاقات الأوسمة على الطلاب"
             >
               <Printer className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>طباعة كشف جميع الأوسمة (PDF)</span>
+              <span>طباعة وتوزيع بطاقات الأوسمة (PDF)</span>
             </button>
           )}
         </div>
@@ -187,21 +201,24 @@ export const HonorBoardManager: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedBadgeForCert({
+                    setSelectedBadgeForPrintModal({
+                      id: b.id,
+                      studentId: b.studentId,
                       studentName: student?.name || 'الطالب المكرم',
                       sheikhName: sheikh?.name || 'فضيلة المحفظ',
-                      title: `وسام التميز والتكريم: ${b.name}`,
-                      achievementText: `تقديراً وتكريماً لجهوده المباركة وتميزه في حفظ القرآن الكريم وسلوكه القويم: ${b.description}`,
-                      grade: b.name,
+                      halqaName: sheikh?.halqaName || 'الحلقة القرآنية',
+                      badgeName: b.name,
                       badgeIcon: b.icon,
-                      date: b.dateEarned
+                      description: b.description,
+                      dateEarned: b.dateEarned
                     });
+                    setShowBadgesPrintModal(true);
                   }}
                   className="mt-3 w-full py-1.5 px-3 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800/80 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-                  title="طباعة شهادة الوسام أو حفظها بتنسيق PDF"
+                  title="طباعة بطاقة الوسام أو حفظها بتنسيق PDF"
                 >
                   <Printer className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  <span>طباعة شهادة الوسام (PDF)</span>
+                  <span>طباعة بطاقة الوسام للتوزيع (PDF)</span>
                 </button>
               </div>
             );
@@ -313,128 +330,15 @@ export const HonorBoardManager: React.FC = () => {
         />
       )}
 
-      {/* 2. Comprehensive Badges Record Print Modal (A4 Print / Save PDF) */}
-      {showAllBadgesPrint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 my-6 transition-all">
-            {/* Action Bar */}
-            <div className="no-print flex items-center justify-between px-6 py-3.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg">
-                  <Award className="w-5 h-5" />
-                </span>
-                <div>
-                  <span className="font-bold text-sm text-slate-800 dark:text-slate-100 block">
-                    كشف وسجل الأوسمة والتكريمات الممنوحة
-                  </span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold block">
-                    جاهز للطباعة والتصدير بتنسيق A4 / PDF
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>طباعة أو حفظ PDF</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowAllBadgesPrint(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                  title="إغلاق"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Printable Content */}
-            <div className="p-6 sm:p-8 bg-white text-slate-900">
-              {/* Header */}
-              <div className="flex justify-between items-center pb-4 mb-4 border-b-2 border-slate-300">
-                <div className="flex items-center gap-3">
-                  {effectiveLogo && (
-                    <img src={effectiveLogo} alt="Logo" className="w-14 h-14 object-contain rounded-xl" />
-                  )}
-                  <div>
-                    <h2 className="text-lg font-black text-emerald-950 font-serif">{centerInfo.name || 'مركز تحفيظ القرآن الكريم'}</h2>
-                    <p className="text-xs text-slate-500">إدارة شؤون القرآن الكريم والدراسات الإسلامية</p>
-                  </div>
-                </div>
-                <div className="text-left text-xs text-slate-600 space-y-0.5">
-                  <div className="font-bold text-amber-900 text-sm">سجل الأوسمة والتكريمات الشرفية</div>
-                  <div>العام الهجري: {centerInfo.hijriYear || '1448هـ'}</div>
-                  <div>تاريخ التقرير: {new Date().toISOString().split('T')[0]}</div>
-                </div>
-              </div>
-
-              {/* Badges Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-right text-xs border border-slate-300">
-                  <thead className="bg-amber-50 text-slate-800 font-bold border-b border-slate-300">
-                    <tr>
-                      <th className="p-2 border-l border-slate-300 text-center w-10">#</th>
-                      <th className="p-2 border-l border-slate-300 text-center w-12">الوسام</th>
-                      <th className="p-2 border-l border-slate-300">مسمى الوسام والتكريم</th>
-                      <th className="p-2 border-l border-slate-300">اسم الطالب المكرم</th>
-                      <th className="p-2 border-l border-slate-300">الحلقة / الشيخ</th>
-                      <th className="p-2 border-l border-slate-300">سبب المنح وملاحظات الإتقان</th>
-                      <th className="p-2 text-center w-24">تاريخ المنح</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {badges.map((b, i) => {
-                      const student = students.find(s => s.id === b.studentId);
-                      const sheikh = sheikhs.find(s => s.id === student?.sheikhId);
-                      return (
-                        <tr key={b.id} className="hover:bg-slate-50">
-                          <td className="p-2 border-l border-slate-200 text-center font-bold text-slate-500">{i + 1}</td>
-                          <td className="p-2 border-l border-slate-200 text-center text-xl">{b.icon}</td>
-                          <td className="p-2 border-l border-slate-200 font-bold text-amber-900">{b.name}</td>
-                          <td className="p-2 border-l border-slate-200 font-bold text-emerald-950">{student?.name || '—'}</td>
-                          <td className="p-2 border-l border-slate-200 text-slate-700">{sheikh?.halqaName || sheikh?.name || '—'}</td>
-                          <td className="p-2 border-l border-slate-200 text-slate-600 text-[11px] leading-relaxed">{b.description}</td>
-                          <td className="p-2 text-center font-mono text-[11px] text-slate-700">{b.dateEarned}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Signatures & Stamp */}
-              <div className="grid grid-cols-3 gap-6 mt-8 pt-4 border-t-2 border-slate-300 text-xs font-bold text-center">
-                <div>
-                  <div>المشرف التربوي للحلقات:</div>
-                  <div className="mt-8 text-slate-400">.........................................</div>
-                </div>
-                <div className="flex flex-col items-center justify-center">
-                  {effectiveLogo ? (
-                    <div className="w-14 h-14 rounded-full border-2 border-double border-amber-700/80 p-0.5 flex items-center justify-center">
-                      <img src={effectiveLogo} alt="ختم" className="w-full h-full object-contain rounded-full" />
-                    </div>
-                  ) : null}
-                  <div className="text-[10px] text-amber-900 font-serif mt-1">الختم الرسمي</div>
-                </div>
-                <div>
-                  <div>اعتماد مدير المركز:</div>
-                  {effectiveManagerSignature ? (
-                    <div className="flex flex-col items-center justify-center mt-1">
-                      <img src={effectiveManagerSignature} alt="التوقيع" className="h-10 w-auto object-contain max-w-[120px]" />
-                      <div className="font-serif text-emerald-900">{centerInfo.managerName}</div>
-                    </div>
-                  ) : (
-                    <div className="mt-8 font-serif text-emerald-900">{centerInfo.managerName}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* 2. Badges Printing & Distribution Modal (Individual or Batch with zero clipping) */}
+      {showBadgesPrintModal && (
+        <BadgesPrintModal
+          onClose={() => {
+            setShowBadgesPrintModal(false);
+            setSelectedBadgeForPrintModal(null);
+          }}
+          preselectedBadge={selectedBadgeForPrintModal || undefined}
+        />
       )}
 
     </div>

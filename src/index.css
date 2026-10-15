@@ -31,6 +31,17 @@
   .no-print {
     display: none !important;
   }
+  /* Completely hide the main application when printing an isolated modal (certificates / badges) */
+  body.printing-modal-active > #root {
+    display: none !important;
+  }
+  body.printing-modal-active {
+    background: #ffffff !important;
+    background-image: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
   body {
     background: #ffffff !important;
     color: #000000 !important;

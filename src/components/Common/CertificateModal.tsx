@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { Award, Printer, X, Sparkles, Check, RotateCw } from 'lucide-react';
 
@@ -36,6 +37,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     '';
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('landscape');
 
+  // Activate modal print isolation on body so that the background app (#root) is hidden in print
+  useEffect(() => {
+    document.body.classList.add('printing-modal-active');
+    return () => {
+      document.body.classList.remove('printing-modal-active');
+    };
+  }, []);
+
   // Trigger print dialog automatically when autoPrint is true
   useEffect(() => {
     if (autoPrint) {
@@ -50,14 +59,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     window.print();
   };
 
-  return (
+  const modalContent = (
     <>
       {/* Print CSS Rules for Exact A4 Page Sizing */}
       <style>{`
         @media print {
           @page {
             size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-            margin: 6mm 7mm !important;
+            margin: 7mm 7mm !important;
           }
           html, body {
             width: 100% !important;
@@ -67,24 +76,42 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             background: #ffffff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            overflow: visible !important;
+          }
+          /* Completely hide the background main application */
+          body.printing-modal-active > #root {
+            display: none !important;
           }
           .no-print {
             display: none !important;
           }
-          /* Cover everything else and isolate certificate on page 1 */
+          /* Reset overlay to take up the single printed A4 page without background or offsets */
           .certificate-modal-overlay {
             position: static !important;
             width: 100% !important;
             height: 100% !important;
-            max-width: 100% !important;
-            max-height: 100% !important;
+            max-width: none !important;
+            max-height: none !important;
             margin: 0 !important;
             padding: 0 !important;
-            background: #ffffff !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            overflow: hidden !important;
+            background: transparent !important;
+            display: block !important;
+            overflow: visible !important;
+          }
+          /* Strip all screen wrapper borders, shadows, and max-height constraints */
+          .certificate-screen-wrapper {
+            max-height: none !important;
+            max-width: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            overflow: visible !important;
+            display: block !important;
           }
           .certificate-modal-content {
             width: 100% !important;
@@ -103,6 +130,8 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             justify-content: space-between !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
             overflow: hidden !important;
           }
           .certificate-frame-inner {
@@ -113,7 +142,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             flex-direction: column !important;
             justify-content: space-between !important;
             padding: ${orientation === 'landscape' ? '3mm 6mm' : '6mm 4mm'} !important;
-            border: 4px double #b45309 !important;
+            border: 3.5px double #b45309 !important;
             border-radius: 12px !important;
             background: #fffdf9 !important;
           }
@@ -137,7 +166,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
       {/* Modal Overlay */}
       <div className="certificate-modal-overlay fixed inset-0 z-50 flex flex-col items-center justify-start sm:justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
         <div
-          className={`relative w-full ${
+          className={`certificate-screen-wrapper relative w-full ${
             orientation === 'landscape' ? 'max-w-4xl' : 'max-w-2xl'
           } max-h-[96vh] flex flex-col bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-amber-300 dark:border-amber-600/40 my-auto transition-all`}
         >
@@ -350,4 +379,6 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
       </div>
     </>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 };

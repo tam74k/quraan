@@ -75,10 +75,14 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      <Navbar onOpenNotifications={() => setIsNotifOpen(true)} />
+      <div className="no-print">
+        <Navbar onOpenNotifications={() => setIsNotifOpen(true)} />
+      </div>
 
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col md:flex-row gap-6">
-        <Sidebar />
+        <div className="no-print shrink-0">
+          <Sidebar />
+        </div>
         
         <main className="flex-1 min-w-0">
           {renderScreen()}
