@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Student } from '../../types';
 import { QuranMushafVisualizer } from '../Common/QuranMushafVisualizer';
-import { BookOpen, Calendar, CheckCircle2, MessageSquare, Award, Sparkles, Trophy, Edit3, AlertTriangle, X, Save, Phone, ShieldCheck } from 'lucide-react';
+import { BookOpen, Calendar, CheckCircle2, MessageSquare, Award, Sparkles, Trophy, Edit3, AlertTriangle, X, Save, Phone, ShieldCheck, Printer } from 'lucide-react';
+import { CertificateModal } from '../Common/CertificateModal';
 
 interface KidProgressDetailProps {
   kid: Student;
@@ -10,6 +11,16 @@ interface KidProgressDetailProps {
 
 export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => {
   const { tracking, sheikhs, notes, badges, currentUser, updateStudent } = useApp();
+
+  const [selectedBadgeForCert, setSelectedBadgeForCert] = useState<{
+    studentName: string;
+    sheikhName: string;
+    title: string;
+    achievementText: string;
+    grade: string;
+    badgeIcon: string;
+    date: string;
+  } | null>(null);
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editCivilId, setEditCivilId] = useState(kid.civilId || '');
@@ -144,15 +155,38 @@ export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => 
             <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200">أوسمة وتكريمات الطالب</h4>
           </div>
           <div className="flex flex-wrap gap-3">
-            {kidBadges.map(b => (
-              <div key={b.id} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 shadow-xs text-xs">
-                <span className="text-lg">{b.icon}</span>
-                <div>
-                  <div className="font-bold text-slate-900 dark:text-slate-100">{b.name}</div>
-                  <div className="text-[10px] text-slate-400">{b.dateEarned}</div>
+            {kidBadges.map(b => {
+              const sheikh = sheikhs.find(s => s.id === kid.sheikhId);
+              return (
+                <div key={b.id} className="flex items-center justify-between gap-3 px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 shadow-xs text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl p-1 bg-amber-50 dark:bg-amber-950 rounded-lg">{b.icon}</span>
+                    <div>
+                      <div className="font-bold text-slate-900 dark:text-slate-100">{b.name}</div>
+                      <div className="text-[10px] text-slate-400">{b.dateEarned}</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedBadgeForCert({
+                        studentName: kid.name,
+                        sheikhName: sheikh?.name || 'فضيلة المحفظ',
+                        title: `وسام التميز والتكريم: ${b.name}`,
+                        achievementText: `تقديراً وتكريماً لجهوده المباركة وتميزه في حفظ القرآن الكريم وسلوكه القويم: ${b.description}`,
+                        grade: b.name,
+                        badgeIcon: b.icon,
+                        date: b.dateEarned
+                      });
+                    }}
+                    className="p-1.5 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 rounded-lg transition-all cursor-pointer"
+                    title="طباعة شهادة الوسام أو حفظها PDF"
+                  >
+                    <Printer className="w-4 h-4" />
+                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -371,6 +405,21 @@ export const KidProgressDetail: React.FC<KidProgressDetailProps> = ({ kid }) => 
             </form>
           </div>
         </div>
+      )}
+
+      {/* Individual Badge Certificate Modal (A4 Print / Save PDF) */}
+      {selectedBadgeForCert && (
+        <CertificateModal
+          studentName={selectedBadgeForCert.studentName}
+          sheikhName={selectedBadgeForCert.sheikhName}
+          title={selectedBadgeForCert.title}
+          achievementText={selectedBadgeForCert.achievementText}
+          grade={selectedBadgeForCert.grade}
+          badgeIcon={selectedBadgeForCert.badgeIcon}
+          date={selectedBadgeForCert.date}
+          autoPrint={true}
+          onClose={() => setSelectedBadgeForCert(null)}
+        />
       )}
 
     </div>

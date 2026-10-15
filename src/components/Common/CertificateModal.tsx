@@ -8,6 +8,7 @@ interface CertificateModalProps {
   title?: string;
   achievementText?: string;
   grade?: string;
+  badgeIcon?: string;
   date?: string;
   onClose: () => void;
   autoPrint?: boolean;
@@ -19,6 +20,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   title = 'شهادة تقدير وإتقان قرآني',
   achievementText = 'نظير تميزه واجتهاده في حفظ ومراجعة القرآن الكريم وإتقانه لأحكام التلاوة والتجويد.',
   grade = 'ممتاز مرتفع',
+  badgeIcon,
   date = new Date().toISOString().split('T')[0],
   onClose,
   autoPrint = true
@@ -196,7 +198,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
-                <span>طباعة الشهادة (A4)</span>
+                <span>طباعة أو حفظ بتنسيق PDF</span>
               </button>
 
               {/* Close Button */}
@@ -247,8 +249,13 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
               </div>
 
-              {/* 2. Certificate Title */}
-              <div className="my-2 sm:my-3">
+              {/* 2. Certificate Title & Badge Emblem */}
+              <div className="my-1.5 sm:my-2.5 flex flex-col items-center">
+                {badgeIcon && (
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-amber-300 to-amber-200 border-2 border-amber-500 shadow-md flex items-center justify-center text-2xl sm:text-3xl mb-1.5 transform hover:scale-105 transition-all">
+                    {badgeIcon}
+                  </div>
+                )}
                 <div className="inline-block px-6 sm:px-10 py-1 border-y-2 border-amber-500/80 bg-amber-500/10 text-xl sm:text-2xl font-black text-amber-800 tracking-wide rounded-sm">
                   {title}
                 </div>
