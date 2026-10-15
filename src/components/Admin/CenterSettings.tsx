@@ -90,7 +90,10 @@ export const CenterSettings: React.FC = () => {
           const reader = new FileReader();
           reader.onload = () => {
             if (typeof reader.result === 'string') {
-              setFormData(prev => ({ ...prev, managerSignature: reader.result as string }));
+              const sig = reader.result as string;
+              setFormData(prev => ({ ...prev, managerSignature: sig }));
+              updateCenterInfo({ managerSignature: sig });
+              localStorage.setItem('center_manager_signature', sig);
             }
           };
           reader.readAsDataURL(file);
@@ -99,14 +102,20 @@ export const CenterSettings: React.FC = () => {
 
         const { data: publicUrlData } = supabase.storage.from('pics').getPublicUrl(fileName);
         if (publicUrlData) {
-          setFormData(prev => ({ ...prev, managerSignature: publicUrlData.publicUrl }));
+          const sigUrl = publicUrlData.publicUrl;
+          setFormData(prev => ({ ...prev, managerSignature: sigUrl }));
+          updateCenterInfo({ managerSignature: sigUrl });
+          localStorage.setItem('center_manager_signature', sigUrl);
         }
       } catch (error: any) {
         // Fallback to FileReader base64
         const reader = new FileReader();
         reader.onload = () => {
           if (typeof reader.result === 'string') {
-            setFormData(prev => ({ ...prev, managerSignature: reader.result as string }));
+            const sig = reader.result as string;
+            setFormData(prev => ({ ...prev, managerSignature: sig }));
+            updateCenterInfo({ managerSignature: sig });
+            localStorage.setItem('center_manager_signature', sig);
           }
         };
         reader.readAsDataURL(file);
@@ -118,6 +127,8 @@ export const CenterSettings: React.FC = () => {
 
   const handleRemoveSignature = () => {
     setFormData(prev => ({ ...prev, managerSignature: '' }));
+    updateCenterInfo({ managerSignature: '' });
+    localStorage.removeItem('center_manager_signature');
   };
 
   const handleSaveInfo = (e: React.FormEvent) => {

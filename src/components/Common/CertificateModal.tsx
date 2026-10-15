@@ -24,6 +24,14 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   autoPrint = true
 }) => {
   const { centerInfo } = useApp();
+  const effectiveManagerSignature =
+    centerInfo.managerSignature ||
+    (typeof window !== 'undefined' ? localStorage.getItem('center_manager_signature') : '') ||
+    '';
+  const effectiveLogo =
+    centerInfo.logo ||
+    (typeof window !== 'undefined' ? localStorage.getItem('center_logo') : '') ||
+    '';
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('landscape');
 
   // Trigger print dialog automatically when autoPrint is true
@@ -107,10 +115,24 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
-            padding: ${orientation === 'landscape' ? '5mm 8mm' : '8mm 6mm'} !important;
+            padding: ${orientation === 'landscape' ? '4mm 7mm' : '7mm 5mm'} !important;
             border: 4px double #b45309 !important;
             border-radius: 12px !important;
             background: #fffdf9 !important;
+          }
+          .student-certificate-name {
+            font-size: ${orientation === 'landscape' ? '30pt' : '26pt'} !important;
+            line-height: 1.25 !important;
+            font-weight: 900 !important;
+          }
+          .manager-signature-img {
+            max-height: 18mm !important;
+            width: auto !important;
+            display: block !important;
+          }
+          .center-seal-stamp {
+            width: 22mm !important;
+            height: 22mm !important;
           }
         }
       `}</style>
@@ -209,11 +231,11 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 </div>
 
                 <div className="pt-2 flex flex-col items-center justify-center">
-                  {centerInfo.logo && (
+                  {effectiveLogo && (
                     <img
-                      src={centerInfo.logo}
+                      src={effectiveLogo}
                       alt={centerInfo.name}
-                      className="h-14 sm:h-16 w-auto object-contain mb-1 drop-shadow-xs bg-white/90 p-1 rounded-xl"
+                      className="h-12 sm:h-14 w-auto object-contain mb-1 drop-shadow-xs bg-white/90 p-1 rounded-xl"
                     />
                   )}
                   <h2 className="text-lg sm:text-xl font-black text-emerald-950 font-serif">
@@ -226,19 +248,19 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               </div>
 
               {/* 2. Certificate Title */}
-              <div className="my-2.5 sm:my-3.5">
-                <div className="inline-block px-6 sm:px-10 py-1.5 border-y-2 border-amber-500/80 bg-amber-500/10 text-xl sm:text-2xl font-black text-amber-800 tracking-wide rounded-sm">
+              <div className="my-2 sm:my-3">
+                <div className="inline-block px-6 sm:px-10 py-1 border-y-2 border-amber-500/80 bg-amber-500/10 text-xl sm:text-2xl font-black text-amber-800 tracking-wide rounded-sm">
                   {title}
                 </div>
               </div>
 
               {/* 3. Certificate Body */}
-              <div className="space-y-2.5 max-w-2xl mx-auto text-slate-700 text-xs sm:text-sm leading-relaxed">
+              <div className="space-y-2 max-w-2xl mx-auto text-slate-700 text-xs sm:text-sm leading-relaxed">
                 <p className="text-slate-600 text-xs sm:text-sm">
                   يَسر إدارة المركز أن تمنح هذه الشهادة المباركة للطالب النجيب /
                 </p>
 
-                <div className="text-2xl sm:text-3xl font-black text-emerald-900 py-0.5 font-serif underline decoration-amber-500/50 underline-offset-6">
+                <div className="student-certificate-name text-3xl sm:text-4xl md:text-5xl font-black text-emerald-950 py-1 sm:py-2 font-serif underline decoration-amber-500/60 underline-offset-8 tracking-wide drop-shadow-xs">
                   {studentName}
                 </div>
 
@@ -259,37 +281,64 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
               </div>
 
               {/* 4. Signatures Block */}
-              <div className="grid grid-cols-2 gap-8 mt-4 pt-3 border-t border-slate-200 text-xs sm:text-sm">
-                <div className="text-center">
-                  <div className="font-bold text-slate-700 text-[11px] sm:text-xs">شيخ ومحفظ الحلقة</div>
-                  <div className="mt-4 font-semibold text-emerald-900 font-serif text-xs sm:text-sm">
+              <div className="grid grid-cols-2 gap-8 mt-3 pt-2.5 border-t border-slate-200/80 text-xs sm:text-sm">
+                <div className="text-center flex flex-col items-center justify-between min-h-[70px] sm:min-h-[80px]">
+                  <div className="font-bold text-slate-700 text-xs sm:text-sm">شيخ ومحفظ الحلقة</div>
+                  <div className="font-semibold text-emerald-950 font-serif text-xs sm:text-sm border-t border-dotted border-slate-400 pt-1 w-36">
                     {sheikhName || 'فضيلة المحفظ'}
                   </div>
                 </div>
 
-                <div className="text-center">
-                  <div className="font-bold text-slate-700 text-[11px] sm:text-xs">مدير المركز</div>
-                  {centerInfo.managerSignature ? (
-                    <div className="flex flex-col items-center justify-center mt-1">
+                <div className="text-center flex flex-col items-center justify-between min-h-[70px] sm:min-h-[80px]">
+                  <div className="font-bold text-slate-700 text-xs sm:text-sm">مدير المركز</div>
+                  {effectiveManagerSignature ? (
+                    <div className="flex flex-col items-center justify-center">
                       <img
-                        src={centerInfo.managerSignature}
+                        src={effectiveManagerSignature}
                         alt="توقيع مدير المركز"
-                        className="h-9 sm:h-11 w-auto object-contain max-w-[130px]"
+                        className="manager-signature-img h-12 sm:h-14 md:h-16 w-auto object-contain max-w-[140px] drop-shadow-2xs"
                       />
-                      <div className="font-semibold text-emerald-900 font-serif text-xs">
+                      <div className="font-semibold text-emerald-950 font-serif text-xs sm:text-sm mt-0.5">
                         {centerInfo.managerName || 'مدير المركز'}
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-4 font-semibold text-emerald-900 font-serif text-xs sm:text-sm">
+                    <div className="font-semibold text-emerald-950 font-serif text-xs sm:text-sm border-t border-dotted border-slate-400 pt-1 w-36">
                       {centerInfo.managerName || 'مدير المركز'}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* 5. Date & Meta Footer */}
-              <div className="mt-3 text-[10px] text-slate-400 flex justify-between items-center px-2 pt-1 border-t border-amber-200/50">
+              {/* 5. Center Seal / Stamp (اسفل التواقيع في المنتصف كختم) */}
+              <div className="flex flex-col items-center justify-center my-1.5 sm:my-2">
+                <div className="relative flex flex-col items-center justify-center">
+                  {effectiveLogo ? (
+                    <div className="center-seal-stamp relative w-16 h-16 sm:w-20 sm:h-20 p-1 rounded-full border-2 border-double border-amber-700/80 bg-amber-50/40 shadow-xs flex items-center justify-center">
+                      <img
+                        src={effectiveLogo}
+                        alt="ختم المركز"
+                        className="w-full h-full object-contain rounded-full opacity-90"
+                      />
+                      <div className="absolute inset-0 rounded-full border border-dashed border-amber-600/50 pointer-events-none" />
+                    </div>
+                  ) : (
+                    <div className="center-seal-stamp w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-double border-amber-700/80 bg-amber-50/50 flex flex-col items-center justify-center p-1 text-center text-amber-900 select-none shadow-xs">
+                      <span className="text-[8px] font-bold text-amber-800">ختم معتمد</span>
+                      <span className="text-[9px] font-extrabold text-emerald-950 font-serif leading-tight line-clamp-2 px-1">
+                        {centerInfo.name || 'المركز القرآني'}
+                      </span>
+                      <span className="text-[7px] text-amber-700 mt-0.5">الختم الرسمي</span>
+                    </div>
+                  )}
+                  <div className="mt-1 bg-amber-100/90 border border-amber-600/40 px-2.5 py-0.5 rounded-full text-[9px] font-bold text-amber-950 shadow-2xs font-serif whitespace-nowrap">
+                    ختم المركز الرسمي
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Date & Meta Footer */}
+              <div className="mt-2 text-[10px] text-slate-400 flex justify-between items-center px-2 pt-1 border-t border-amber-200/50">
                 <span>تاريخ التحرير: {date}</span>
                 <span>العام الهجري: {centerInfo.hijriYear || '1448هـ'}</span>
               </div>
