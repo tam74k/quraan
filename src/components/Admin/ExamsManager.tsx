@@ -291,6 +291,7 @@ export const ExamsManager: React.FC = () => {
           achievementText={`لاجتيازه اختبار حفظ وإتقان ${certExam.exam.partOrSurah} بتقدير (${certExam.exam.grade}) وبدرجة (${certExam.exam.score}/100).`}
           grade={certExam.exam.grade}
           date={certExam.exam.date}
+          autoPrint={true}
           onClose={() => setCertExam(null)}
         />
       )}
