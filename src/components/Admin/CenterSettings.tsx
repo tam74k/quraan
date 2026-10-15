@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Building, Upload, Download, RotateCcw, Save, CheckCircle2, ShieldAlert, Sparkles, FolderArchive } from 'lucide-react';
+import { Building, Upload, Download, RotateCcw, Save, CheckCircle2, ShieldAlert, Sparkles, FolderArchive, PenTool, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export const CenterSettings: React.FC = () => {
@@ -23,6 +23,10 @@ export const CenterSettings: React.FC = () => {
 
   const [formData, setFormData] = useState({ ...centerInfo });
   const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    setFormData({ ...centerInfo });
+  }, [centerInfo]);
   const [errorMsg, setErrorMsg] = useState('');
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -65,6 +69,55 @@ export const CenterSettings: React.FC = () => {
         setIsUploading(false);
       }
     }
+  };
+
+  const [isUploadingSignature, setIsUploadingSignature] = useState(false);
+
+  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingSignature(true);
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `signature-${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage.from('pics').upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+        if (error) {
+          // Fallback to FileReader base64
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === 'string') {
+              setFormData(prev => ({ ...prev, managerSignature: reader.result as string }));
+            }
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        const { data: publicUrlData } = supabase.storage.from('pics').getPublicUrl(fileName);
+        if (publicUrlData) {
+          setFormData(prev => ({ ...prev, managerSignature: publicUrlData.publicUrl }));
+        }
+      } catch (error: any) {
+        // Fallback to FileReader base64
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            setFormData(prev => ({ ...prev, managerSignature: reader.result as string }));
+          }
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setIsUploadingSignature(false);
+      }
+    }
+  };
+
+  const handleRemoveSignature = () => {
+    setFormData(prev => ({ ...prev, managerSignature: '' }));
   };
 
   const handleSaveInfo = (e: React.FormEvent) => {
@@ -281,6 +334,57 @@ export const CenterSettings: React.FC = () => {
                   />
                 )}
                 <p className="text-[10px] text-slate-400 mt-1">يُفضل استخدام صورة شفافة (PNG)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Manager Signature preview and upload */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-700/60">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+              <PenTool className="w-4 h-4 text-emerald-600" />
+              <span>صورة توقيع مدير المركز (تظهر مكان التوقيع في جميع المطبوعات والشهادات الرسمية)</span>
+            </label>
+            <div className="flex flex-wrap items-center gap-4">
+              {formData.managerSignature ? (
+                <div className="relative group">
+                  <div className="h-20 w-44 rounded-2xl bg-white border-2 border-emerald-500/40 p-2 shadow-xs flex items-center justify-center overflow-hidden">
+                    <img
+                      src={formData.managerSignature}
+                      alt="توقيع المدير"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveSignature}
+                    className="mt-1.5 flex items-center gap-1 text-[11px] text-rose-600 hover:text-rose-700 font-bold transition-colors cursor-pointer"
+                    title="حذف التوقيع"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>حذف التوقيع</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="h-20 w-44 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center text-slate-400 text-xs p-2">
+                  <PenTool className="w-5 h-5 mb-1 opacity-50" />
+                  <span>بدون توقيع حالياً</span>
+                </div>
+              )}
+
+              <div className="flex-1 min-w-[200px]">
+                {isUploadingSignature ? (
+                  <div className="text-xs font-bold text-emerald-600 animate-pulse py-2">جاري رفع صورة التوقيع...</div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSignatureUpload}
+                    className="text-xs text-slate-500 file:mr-0 file:ml-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-950 dark:file:text-emerald-300 cursor-pointer"
+                  />
+                )}
+                <p className="text-[10px] text-slate-400 mt-1">
+                  قم برفع صورة توقيع فضيلة مدير المركز مفرغة أو واضحة (PNG أو JPG) لتُعتمد تلقائياً مكان التوقيع في كافة التقارير والشهادات.
+                </p>
               </div>
             </div>
           </div>

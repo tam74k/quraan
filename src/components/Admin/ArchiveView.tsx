@@ -211,7 +211,18 @@ export const ArchiveView: React.FC = () => {
                     </div>
                     <div>
                       <div>اعتماد وختم مدير المركز:</div>
-                      <div className="mt-4 font-serif text-emerald-900">{centerInfo.managerName}</div>
+                      {centerInfo.managerSignature ? (
+                        <div className="flex flex-col items-center justify-center mt-1">
+                          <img
+                            src={centerInfo.managerSignature}
+                            alt="توقيع مدير المركز"
+                            className="h-10 w-auto object-contain max-w-[130px]"
+                          />
+                          <div className="font-serif text-emerald-900">{centerInfo.managerName}</div>
+                        </div>
+                      ) : (
+                        <div className="mt-4 font-serif text-emerald-900">{centerInfo.managerName}</div>
+                      )}
                     </div>
                   </div>
 

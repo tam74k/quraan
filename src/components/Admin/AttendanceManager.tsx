@@ -958,7 +958,18 @@ export const AttendanceManager: React.FC = () => {
               </div>
               <div className="text-center w-48">
                 <div>المشرف العام / المدير</div>
-                <div className="mt-8">{centerInfo.managerName || '...................................'}</div>
+                {centerInfo.managerSignature ? (
+                  <div className="flex flex-col items-center justify-center mt-2">
+                    <img
+                      src={centerInfo.managerSignature}
+                      alt="توقيع مدير المركز"
+                      className="h-10 w-auto object-contain max-w-[130px]"
+                    />
+                    <div>{centerInfo.managerName || '...................................'}</div>
+                  </div>
+                ) : (
+                  <div className="mt-8">{centerInfo.managerName || '...................................'}</div>
+                )}
               </div>
             </div>
           </div>

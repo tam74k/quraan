@@ -254,13 +254,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           logo: centerInfoData.logo || '',
           hijriYear: centerInfoData.hijri_year || '',
           academicSeason: centerInfoData.academic_season || '',
-          managerName: centerInfoData.manager_name || ''
+          managerName: centerInfoData.manager_name || '',
+          managerSignature: centerInfoData.manager_signature || localStorage.getItem('center_manager_signature') || ''
         });
       } else {
         // Fallback info if empty database
         setCenterInfo({
           name: 'مركز تحفيظ القرآن الكريم',
-          address: '', phone: '', email: '', logo: '', hijriYear: '', academicSeason: '', managerName: ''
+          address: '', phone: '', email: '', logo: '', hijriYear: '', academicSeason: '', managerName: '',
+          managerSignature: localStorage.getItem('center_manager_signature') || ''
         })
       }
 
@@ -313,7 +315,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error("Failed to load initial data from Supabase:", err);
       setCenterInfo({
         name: 'مركز تحفيظ القرآن الكريم',
-        address: '', phone: '', email: '', logo: '', hijriYear: '', academicSeason: '', managerName: ''
+        address: '', phone: '', email: '', logo: '', hijriYear: '', academicSeason: '', managerName: '',
+        managerSignature: localStorage.getItem('center_manager_signature') || ''
       });
     }
   };
@@ -377,7 +380,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateCenterInfo = async (info: Partial<CenterInfo>) => {
     const newInfo = { ...centerInfo, ...info };
     setCenterInfo(newInfo);
-    const __res = await supabase.from("center_info").update({
+    if (newInfo.managerSignature !== undefined) {
+      localStorage.setItem('center_manager_signature', newInfo.managerSignature || '');
+    }
+
+    const payload: any = {
       name: newInfo.name,
       address: newInfo.address,
       phone: newInfo.phone,
@@ -386,7 +393,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       hijri_year: newInfo.hijriYear,
       academic_season: newInfo.academicSeason,
       manager_name: newInfo.managerName
-    }).eq("id", 1); if (__res.error) { console.error("Supabase Update Error:", __res.error); alert("فشل التحديث: " + __res.error.message); }
+    };
+
+    if (newInfo.managerSignature !== undefined) {
+      payload.manager_signature = newInfo.managerSignature;
+    }
+
+    let __res = await supabase.from("center_info").update(payload).eq("id", 1);
+    if (__res.error && __res.error.message && __res.error.message.includes("manager_signature")) {
+      delete payload.manager_signature;
+      __res = await supabase.from("center_info").update(payload).eq("id", 1);
+    }
+
+    if (__res.error) {
+      console.error("Supabase Update Error:", __res.error);
+      alert("فشل التحديث: " + __res.error.message);
+    }
   };
 
   const addStudent = (studentData: Omit<Student, "id">): Student => {

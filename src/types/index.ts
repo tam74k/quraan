@@ -33,6 +33,7 @@ export interface CenterInfo {
   hijriYear: string;
   academicSeason: string;
   managerName: string;
+  managerSignature?: string;
 }
 
 export interface Sheikh {

@@ -269,9 +269,22 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
 
                 <div className="text-center">
                   <div className="font-bold text-slate-700 text-[11px] sm:text-xs">مدير المركز</div>
-                  <div className="mt-4 font-semibold text-emerald-900 font-serif text-xs sm:text-sm">
-                    {centerInfo.managerName || 'مدير المركز'}
-                  </div>
+                  {centerInfo.managerSignature ? (
+                    <div className="flex flex-col items-center justify-center mt-1">
+                      <img
+                        src={centerInfo.managerSignature}
+                        alt="توقيع مدير المركز"
+                        className="h-9 sm:h-11 w-auto object-contain max-w-[130px]"
+                      />
+                      <div className="font-semibold text-emerald-900 font-serif text-xs">
+                        {centerInfo.managerName || 'مدير المركز'}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 font-semibold text-emerald-900 font-serif text-xs sm:text-sm">
+                      {centerInfo.managerName || 'مدير المركز'}
+                    </div>
+                  )}
                 </div>
               </div>
 
