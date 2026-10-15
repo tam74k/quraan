@@ -86,7 +86,7 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
         @media print {
           @page {
             size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-            margin: 0 !important;
+            margin: 6mm 7mm !important;
           }
           html, body {
             width: 100% !important;
@@ -128,17 +128,17 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
           }
           /* Individual Certificate Page (Exact A4 per page) */
           .batch-certificate-page {
-            width: ${orientation === 'landscape' ? '297mm' : '210mm'} !important;
-            height: ${orientation === 'landscape' ? '210mm' : '297mm'} !important;
-            max-width: ${orientation === 'landscape' ? '297mm' : '210mm'} !important;
-            max-height: ${orientation === 'landscape' ? '210mm' : '297mm'} !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
             page-break-before: auto !important;
             page-break-after: always !important;
             break-after: page !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             box-sizing: border-box !important;
-            padding: ${orientation === 'landscape' ? '6mm 8mm' : '8mm 6mm'} !important;
+            padding: 0 !important;
             margin: 0 auto !important;
             background: #fffdfa !important;
             display: flex !important;
@@ -148,43 +148,44 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
           }
           .certificate-frame-inner {
             height: 100% !important;
+            width: 100% !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
-            padding: ${orientation === 'landscape' ? '4mm 7mm' : '7mm 5mm'} !important;
+            padding: ${orientation === 'landscape' ? '3mm 6mm' : '6mm 4mm'} !important;
             border: 4px double #b45309 !important;
             border-radius: 12px !important;
             background: #fffdf9 !important;
           }
           .student-certificate-name {
-            font-size: ${orientation === 'landscape' ? '30pt' : '26pt'} !important;
+            font-size: ${orientation === 'landscape' ? '28pt' : '24pt'} !important;
             line-height: 1.25 !important;
             font-weight: 900 !important;
           }
           .manager-signature-img {
-            max-height: 18mm !important;
+            max-height: 16mm !important;
             width: auto !important;
             display: block !important;
           }
           .center-seal-stamp {
-            width: 22mm !important;
-            height: 22mm !important;
+            width: 20mm !important;
+            height: 20mm !important;
           }
         }
       `}</style>
 
       {/* Modal Overlay */}
-      <div className="batch-certificates-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/75 backdrop-blur-xs overflow-y-auto">
+      <div className="batch-certificates-overlay fixed inset-0 z-50 flex flex-col items-center justify-start sm:justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
         <div
           className={`batch-modal-wrapper relative w-full ${
             orientation === 'landscape' ? 'max-w-5xl' : 'max-w-3xl'
-          } bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-amber-300 dark:border-amber-600/40 my-6 transition-all`}
+          } max-h-[96vh] flex flex-col bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-amber-300 dark:border-amber-600/40 my-auto transition-all`}
         >
-          {/* Actions Bar (hidden in print) */}
-          <div className="no-print flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          {/* Actions Bar (sticky top, immediately visible without scrolling) */}
+          <div className="no-print sticky top-0 z-50 shrink-0 flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-6 sm:py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-2xs">
             <div className="flex items-center gap-3">
-              <span className="p-2 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-xl shadow-xs">
+              <span className="p-1.5 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-xl shadow-xs">
                 <Award className="w-5 h-5" />
               </span>
               <div>
@@ -196,8 +197,8 @@ export const BatchCertificatesModal: React.FC<BatchCertificatesModalProps> = ({
                     {activeCerts.length} شهادة محددة
                   </span>
                 </div>
-                <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold block mt-0.5">
-                  ✓ طباعة الكل دفعة واحدة مع مراعاة خروج كل شهادة في صفحة A4 مستقلة تماماً
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold block mt-0.5">
+                  ✓ طباعة الكل دفعة واحدة مع مراعاة خروج كل شهادة في صفحة A4 مستقلة وهوامش آمنة
                 </span>
               </div>
             </div>

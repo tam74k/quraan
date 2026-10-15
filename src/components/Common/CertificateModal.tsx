@@ -57,7 +57,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
         @media print {
           @page {
             size: ${orientation === 'landscape' ? 'A4 landscape' : 'A4 portrait'};
-            margin: 0 !important;
+            margin: 6mm 7mm !important;
           }
           html, body {
             width: 100% !important;
@@ -73,81 +73,76 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           }
           /* Cover everything else and isolate certificate on page 1 */
           .certificate-modal-overlay {
-            position: fixed !important;
-            inset: 0 !important;
-            width: ${orientation === 'landscape' ? '297mm' : '210mm'} !important;
-            height: ${orientation === 'landscape' ? '210mm' : '297mm'} !important;
-            max-width: ${orientation === 'landscape' ? '297mm' : '210mm'} !important;
-            max-height: ${orientation === 'landscape' ? '210mm' : '297mm'} !important;
-            margin: 0 auto !important;
+            position: static !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
-            z-index: 9999999 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            page-break-inside: avoid !important;
-            page-break-after: avoid !important;
-            break-after: avoid !important;
             overflow: hidden !important;
           }
           .certificate-modal-content {
-            width: ${orientation === 'landscape' ? '297mm' : '210mm'} !important;
-            height: ${orientation === 'landscape' ? '210mm' : '297mm'} !important;
-            max-width: ${orientation === 'landscape' ? '297mm' : '210mm'} !important;
-            max-height: ${orientation === 'landscape' ? '210mm' : '297mm'} !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
             border: none !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            margin: 0 !important;
-            padding: ${orientation === 'landscape' ? '6mm 8mm' : '8mm 6mm'} !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
             box-sizing: border-box !important;
             background: #fffdfa !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
             page-break-inside: avoid !important;
-            page-break-after: avoid !important;
-            break-after: avoid !important;
+            break-inside: avoid !important;
             overflow: hidden !important;
           }
           .certificate-frame-inner {
             height: 100% !important;
+            width: 100% !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
-            padding: ${orientation === 'landscape' ? '4mm 7mm' : '7mm 5mm'} !important;
+            padding: ${orientation === 'landscape' ? '3mm 6mm' : '6mm 4mm'} !important;
             border: 4px double #b45309 !important;
             border-radius: 12px !important;
             background: #fffdf9 !important;
           }
           .student-certificate-name {
-            font-size: ${orientation === 'landscape' ? '30pt' : '26pt'} !important;
+            font-size: ${orientation === 'landscape' ? '28pt' : '24pt'} !important;
             line-height: 1.25 !important;
             font-weight: 900 !important;
           }
           .manager-signature-img {
-            max-height: 18mm !important;
+            max-height: 16mm !important;
             width: auto !important;
             display: block !important;
           }
           .center-seal-stamp {
-            width: 22mm !important;
-            height: 22mm !important;
+            width: 20mm !important;
+            height: 20mm !important;
           }
         }
       `}</style>
 
       {/* Modal Overlay */}
-      <div className="certificate-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-xs overflow-y-auto">
+      <div className="certificate-modal-overlay fixed inset-0 z-50 flex flex-col items-center justify-start sm:justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
         <div
           className={`relative w-full ${
             orientation === 'landscape' ? 'max-w-4xl' : 'max-w-2xl'
-          } bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-amber-300 dark:border-amber-600/40 my-6 transition-all`}
+          } max-h-[96vh] flex flex-col bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-amber-300 dark:border-amber-600/40 my-auto transition-all`}
         >
-          {/* Actions Bar (hidden in print) */}
-          <div className="no-print flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          {/* Actions Bar (sticky top, immediately visible without scrolling) */}
+          <div className="no-print sticky top-0 z-50 shrink-0 flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-6 sm:py-2.5 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-2xs">
             <div className="flex items-center gap-2">
               <span className="p-1.5 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg">
                 <Award className="w-5 h-5" />
@@ -157,7 +152,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                   معاينة وطباعة الشهادة القرآنية
                 </span>
                 <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold block">
-                  ✓ مضبوطة ومطابقة لمقاس ورق A4 الرسمية بدقة
+                  ✓ مضبوطة ومطابقة لمقاس ورق A4 بدقة وهوامش آمنة
                 </span>
               </div>
             </div>
@@ -168,7 +163,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setOrientation('landscape')}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                     orientation === 'landscape'
                       ? 'bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-300'
@@ -180,7 +175,7 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setOrientation('portrait')}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                     orientation === 'portrait'
                       ? 'bg-white dark:bg-slate-900 text-emerald-800 dark:text-emerald-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-300'
@@ -214,9 +209,9 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
           </div>
 
           {/* Certificate Body (Print Area) */}
-          <div className="certificate-modal-content p-4 sm:p-6 md:p-8 bg-gradient-to-b from-[#fbf8f0] to-[#fffdf9] text-slate-800 text-center relative selection:bg-amber-200">
+          <div className="certificate-modal-content flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 bg-gradient-to-b from-[#fbf8f0] to-[#fffdf9] text-slate-800 text-center relative selection:bg-amber-200">
             {/* Islamic Ornate Frame */}
-            <div className="certificate-frame-inner border-[4px] border-double border-amber-600/90 rounded-2xl p-4 sm:p-6 md:p-8 relative shadow-inner bg-[#fffdfa]/95">
+            <div className="certificate-frame-inner border-[4px] border-double border-amber-600/90 rounded-2xl p-3 sm:p-5 md:p-6 relative shadow-inner bg-[#fffdfa]/95">
               {/* Corner Stars / Embellishments */}
               <div className="absolute top-2 right-2 text-amber-600 text-lg font-serif select-none">✦ ۞</div>
               <div className="absolute top-2 left-2 text-amber-600 text-lg font-serif select-none">۞ ✦</div>
